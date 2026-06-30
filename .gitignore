@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 slice/out/
 app/out/
+
+# local credential docs — never commit
+SSB*SKU*.md
+*access*.md

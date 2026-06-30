@@ -52,34 +52,49 @@ _MOCK: Dict[str, Product] = {
 }
 
 _lock = threading.Lock()
-_products: Optional[Dict[str, Product]] = None
+_seed: Optional[Dict[str, Product]] = None
 
 
-def _load_source() -> Dict[str, Product]:
-    """Load once: Postgres if DATABASE_URL is set, else the mock."""
-    global _products
+def _is_mysql() -> bool:
+    return bool(settings.database_url) and settings.database_url.startswith("mysql")
+
+
+def _load_seed() -> Dict[str, Product]:
+    """Load the seed set once: real DB if DATABASE_URL is set, else the mock."""
+    global _seed
     with _lock:
-        if _products is not None:
-            return _products
-        if settings.db_ready:
-            from app import db_postgres
-            _products = db_postgres.load_all(
-                settings.database_url, settings.products_table)
+        if _seed is not None:
+            return _seed
+        url = settings.database_url
+        if not url:
+            _seed = dict(_MOCK)
+        elif _is_mysql():
+            from app import db_mysql
+            _seed = db_mysql.load_seed(url)
         else:
-            _products = dict(_MOCK)
-        return _products
+            from app import db_postgres
+            _seed = db_postgres.load_all(url, settings.products_table)
+        return _seed
 
 
 def source() -> str:
-    return "postgres" if settings.db_ready else "mock"
+    if not settings.database_url:
+        return "mock"
+    return "mysql" if _is_mysql() else "postgres"
 
 
 def list_skus() -> List[str]:
-    return list(_load_source().keys())
+    return list(_load_seed().keys())
 
 
 def load_product(sku: str) -> Product:
-    products = _load_source()
-    if sku not in products:
-        raise KeyError(sku)
-    return products[sku]
+    seed = _load_seed()
+    if sku in seed:
+        return seed[sku]
+    # not in the seed set — fetch this single SKU directly (robust to unseen SKUs)
+    if _is_mysql():
+        from app import db_mysql
+        p = db_mysql.fetch_one(settings.database_url, sku)
+        if p:
+            return p
+    raise KeyError(sku)

@@ -83,6 +83,14 @@ def t0_introspect():
     cm = db_postgres.build_colmap(["ItemID","Product_Name","Net_Weight"])
     return cm["sku"]=="ItemID" and cm["weight_g"]=="Net_Weight", "synonym mapping"
 
+def t0_mysql_normalize():
+    # pure-function unit conversion for the real fbm_sku schema (no DB needed)
+    from app import db_mysql
+    p = db_mysql.normalize({"sku":"X","title":"T","sku_length":"32.1",
+        "sku_weight":"4.4","remark":"PACK OF 3","sku_category":"sports"})
+    return (abs(p.length_cm-81.53)<0.1 and abs(p.weight_g-1995.8)<1
+            and p.unit_count==3), f"len={p.length_cm} wt={p.weight_g} pack={p.unit_count}"
+
 
 # ---------------- Tier 1 ----------------
 def t1_enrich_shape():
@@ -234,6 +242,7 @@ CHECKS = [
     ("Tier0","products>=3",t0_products),("Tier0","product_normalized",t0_product_normalized),
     ("Tier0","docker_files",t0_docker),("Tier0","no_secrets",t0_no_secrets),
     ("Tier0","db_introspection",t0_introspect),
+    ("Tier0","mysql_normalize",t0_mysql_normalize),
     ("Tier1","enrich_shape",t1_enrich_shape),("Tier1","enrich_no_fabrication",t1_enrich_no_fabrication),
     ("Tier1","enrich_cache",t1_enrich_cache),
     ("Tier2","listing_copy",t2_listing_copy),("Tier2","aplus_modules",t2_aplus_modules),

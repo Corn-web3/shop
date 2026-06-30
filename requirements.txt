@@ -5,3 +5,4 @@ openai==2.44.0
 Pillow==12.2.0
 pydantic==2.13.4
 psycopg[binary]==3.2.10
+PyMySQL==1.1.2
