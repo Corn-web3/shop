@@ -1,0 +1,7 @@
+fastapi==0.138.2
+uvicorn==0.49.0
+langgraph==1.2.6
+openai==2.44.0
+Pillow==12.2.0
+pydantic==2.13.4
+psycopg[binary]==3.2.10

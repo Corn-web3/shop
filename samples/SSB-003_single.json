@@ -1,0 +1,228 @@
+{
+  "spec": {
+    "kind": "single",
+    "skus": [
+      "SSB-003"
+    ],
+    "units": 1
+  },
+  "products": [
+    {
+      "sku": "SSB-003",
+      "title": "Stackable Storage Brick 2L",
+      "brand": "SuperSonicBrick",
+      "category": "Home & Kitchen / Food Storage",
+      "color": "Sky Blue",
+      "material": "BPA-Free Polypropylene",
+      "unit_count": 1,
+      "length_cm": 20.0,
+      "width_cm": 14.0,
+      "height_cm": 10.0,
+      "weight_g": 240.0,
+      "price": 12.49,
+      "image_urls": []
+    }
+  ],
+  "physical": {
+    "total_units": 1,
+    "product_weight_g": 240.0,
+    "packaging_weight_g": 33.0,
+    "total_weight_g": 273.0,
+    "package_dimensions_cm": {
+      "length": 22.0,
+      "width": 16.0,
+      "height": 12.0
+    },
+    "arrangement": "1x1 grid",
+    "assumptions": [
+      "box+label base 25.0 g",
+      "padding 8.0 g and 1.0 cm per unit/side",
+      "units packed upright"
+    ]
+  },
+  "copy": {
+    "title": "SuperSonicBrick Stackable Storage Brick 2L, Sky Blue, BPA-Free Polypropylene Food Storage Container",
+    "bullets": [
+      "2 L storage capacity for organizing dry goods, snacks, leftovers, or small household items in kitchens, pantries, and drawers.",
+      "Stackable brick-style shape helps save space and supports neat, modular storage when paired with other compatible containers.",
+      "Made from BPA-Free Polypropylene for a lightweight, durable container designed for everyday food storage use.",
+      "Sky Blue color adds a clean, modern look while making contents easy to identify in storage areas.",
+      "Single unit order includes 1 container measuring 20.0 x 14.0 x 10.0 cm and weighing 273.0 g for convenient handling."
+    ],
+    "description": "SuperSonicBrick Stackable Storage Brick 2L is a single food storage container designed for everyday home organization. Made from BPA-Free Polypropylene, it offers a 2-liter capacity in a stackable brick-style form. The Sky Blue container measures 20.0 x 14.0 x 10.0 cm and is suitable for storing dry goods, snacks, leftovers, or household items in kitchens and pantry spaces.",
+    "search_terms": "stackable storage container food storage 2l bpa free polypropylene sky blue kitchen pantry brick shape modular organizer"
+  },
+  "a_plus_modules": [
+    {
+      "type": "lifestyle",
+      "size": [
+        970,
+        600
+      ],
+      "headline": "Stackable Storage Made Simple",
+      "body": "Keep small items neat with the SuperSonicBrick 2L storage brick. The sky blue, BPA-free polypropylene design stacks securely to help maximize space in kitchens, craft rooms, or offices.",
+      "alt_text": "Sky blue 2L stackable storage brick in a tidy room",
+      "image": {
+        "path": "samples/SSB-003_single__aplus_de6e2a1ff137_m0_lifestyle_970x600.png",
+        "mode": "generated",
+        "size": [
+          970,
+          600
+        ],
+        "prompt": "Lifestyle product photograph of a Sky Blue BPA-Free Polypropylene Stackable Storage Brick 2L being used in a bright everyday setting, photorealistic, true to the product's color and material, no text, no watermark.",
+        "file": "SSB-003_single__aplus_de6e2a1ff137_m0_lifestyle_970x600.png"
+      }
+    },
+    {
+      "type": "feature",
+      "size": [
+        970,
+        300
+      ],
+      "headline": "Durable BPA-Free Polypropylene",
+      "body": "Made from BPA-free polypropylene, this 2L storage brick offers lightweight organization with a clean, durable finish. Designed to stack for flexible storage and easy everyday use.",
+      "alt_text": "Sky blue BPA-free polypropylene storage brick close-up",
+      "image": {
+        "path": "samples/SSB-003_single__aplus_de6e2a1ff137_m1_feature_970x300.png",
+        "mode": "generated",
+        "size": [
+          970,
+          300
+        ],
+        "prompt": "Clean studio feature shot of a Sky Blue BPA-Free Polypropylene Stackable Storage Brick 2L on a soft neutral gradient background, highlighting material and finish, no text, no watermark.",
+        "file": "SSB-003_single__aplus_de6e2a1ff137_m1_feature_970x300.png"
+      }
+    }
+  ],
+  "images": {
+    "main": {
+      "path": "samples/SSB-003_single__SSB-003_x1_de6e2a1ff137_a1.jpg",
+      "mode": "generated",
+      "intended_count": 1,
+      "prompt": "Product photography of one item: a Sky Blue BPA-Free Polypropylene Stackable Storage Brick 2L. Show exactly 1 unit(s), no more, no less. Pure white background (RGB 255,255,255), studio lighting, no shadow, no props, no text or watermark. Product fills at least 85% of the frame. Square 1:1 aspect ratio.",
+      "file": "SSB-003_single__SSB-003_x1_de6e2a1ff137_a1.jpg"
+    },
+    "a_plus": [
+      {
+        "path": "samples/SSB-003_single__aplus_de6e2a1ff137_m0_lifestyle_970x600.png",
+        "mode": "generated",
+        "size": [
+          970,
+          600
+        ],
+        "prompt": "Lifestyle product photograph of a Sky Blue BPA-Free Polypropylene Stackable Storage Brick 2L being used in a bright everyday setting, photorealistic, true to the product's color and material, no text, no watermark.",
+        "file": "SSB-003_single__aplus_de6e2a1ff137_m0_lifestyle_970x600.png"
+      },
+      {
+        "path": "samples/SSB-003_single__aplus_de6e2a1ff137_m1_feature_970x300.png",
+        "mode": "generated",
+        "size": [
+          970,
+          300
+        ],
+        "prompt": "Clean studio feature shot of a Sky Blue BPA-Free Polypropylene Stackable Storage Brick 2L on a soft neutral gradient background, highlighting material and finish, no text, no watermark.",
+        "file": "SSB-003_single__aplus_de6e2a1ff137_m1_feature_970x300.png"
+      }
+    ]
+  },
+  "compliance": {
+    "compliant": true,
+    "error_count": 0,
+    "warn_count": 0,
+    "violations": []
+  },
+  "observability": {
+    "llm_calls": 5,
+    "prompt_tokens": 9788,
+    "completion_tokens": 545,
+    "image_calls": 3,
+    "cache_hits": 0,
+    "per_agent_seconds": {
+      "Supervisor": 0.0,
+      "Physical": 0.0,
+      "Copy": 6.593,
+      "Image": 33.987,
+      "Critic": 14.542,
+      "A+": 84.875,
+      "Compliance": 0.001
+    },
+    "total_seconds": 139.998,
+    "estimated_cost_usd": 0.1257,
+    "cost_basis": "estimated; rates overridable via COST_PER_* env vars"
+  },
+  "main_image": {
+    "path": "samples/SSB-003_single__SSB-003_x1_de6e2a1ff137_a1.jpg",
+    "mode": "generated",
+    "intended_count": 1,
+    "prompt": "Product photography of one item: a Sky Blue BPA-Free Polypropylene Stackable Storage Brick 2L. Show exactly 1 unit(s), no more, no less. Pure white background (RGB 255,255,255), studio lighting, no shadow, no props, no text or watermark. Product fills at least 85% of the frame. Square 1:1 aspect ratio.",
+    "file": "SSB-003_single__SSB-003_x1_de6e2a1ff137_a1.jpg"
+  },
+  "critic": {
+    "overall_pass": true,
+    "expected_count": 1,
+    "checks": [
+      {
+        "check": "white_background",
+        "pass": true,
+        "worst_channel_rgb": [
+          255,
+          255,
+          255
+        ],
+        "required": [
+          255,
+          255,
+          255
+        ]
+      },
+      {
+        "check": "coverage",
+        "pass": true,
+        "longest_side_fill": 0.981,
+        "area_ratio": 0.758,
+        "required_min": 0.85
+      },
+      {
+        "check": "count_projection",
+        "informational": true,
+        "pass": true,
+        "counted": 1,
+        "expected": 1
+      },
+      {
+        "check": "vision",
+        "skipped": false,
+        "pass": true,
+        "voted": {
+          "count_ok": true,
+          "items_ok": true
+        },
+        "samples": 3,
+        "verdicts": [
+          {
+            "count_seen": 1,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "One sky-blue stackable storage brick is visible; material appears consistent with plastic/polypropylene."
+          },
+          {
+            "count_seen": 1,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "One sky-blue stackable storage brick is visible; color matches and the material appears to be plastic consistent with polypropylene."
+          },
+          {
+            "count_seen": 1,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "One sky-blue stackable storage brick is visible. It appears to be plastic, consistent with BPA-free polypropylene."
+          }
+        ]
+      }
+    ]
+  },
+  "compliant": true,
+  "image_compliant": true,
+  "copy_compliant": true,
+  "attempts": 1
+}

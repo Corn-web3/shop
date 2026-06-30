@@ -1,0 +1,244 @@
+{
+  "spec": {
+    "kind": "combo",
+    "skus": [
+      "SSB-001",
+      "SSB-002"
+    ],
+    "units": 1
+  },
+  "products": [
+    {
+      "sku": "SSB-001",
+      "title": "Insulated Water Bottle 500ml",
+      "brand": "SuperSonicBrick",
+      "category": "Sports & Outdoors / Water Bottles",
+      "color": "Matte Black",
+      "material": "Stainless Steel",
+      "unit_count": 1,
+      "length_cm": 7.0,
+      "width_cm": 7.0,
+      "height_cm": 25.0,
+      "weight_g": 320.0,
+      "price": 19.99,
+      "image_urls": []
+    },
+    {
+      "sku": "SSB-002",
+      "title": "Silicone Travel Cup 350ml",
+      "brand": "SuperSonicBrick",
+      "category": "Sports & Outdoors / Travel Mugs",
+      "color": "Forest Green",
+      "material": "Food-Grade Silicone",
+      "unit_count": 1,
+      "length_cm": 8.0,
+      "width_cm": 8.0,
+      "height_cm": 12.0,
+      "weight_g": 180.0,
+      "price": 14.99,
+      "image_urls": []
+    }
+  ],
+  "physical": {
+    "total_units": 2,
+    "product_weight_g": 500.0,
+    "packaging_weight_g": 41.0,
+    "total_weight_g": 541.0,
+    "package_dimensions_cm": {
+      "length": 18.0,
+      "width": 10.0,
+      "height": 27.0
+    },
+    "arrangement": "side-by-side",
+    "assumptions": [
+      "box+label base 25.0 g",
+      "padding 8.0 g and 1.0 cm per unit/side",
+      "items packed side by side"
+    ]
+  },
+  "copy": {
+    "title": "SuperSonicBrick Insulated Water Bottle 500ml And Silicone Travel Cup 350ml Bundle Matte Black Forest Green",
+    "bullets": [
+      "Bundle Includes Two Everyday Drinkware Essentials: One 500ml Insulated Stainless Steel Water Bottle And One 350ml Food-Grade Silicone Travel Cup For Home, Office, Travel, And Outdoor Use.",
+      "500ml Insulated Water Bottle Helps Maintain Drink Temperature While The Stainless Steel Body Provides Durable, Reusable Performance For Daily Hydration.",
+      "350ml Silicone Travel Cup Offers A Lightweight, Flexible Design With Food-Grade Silicone For Easy Packing, Carrying, And Reusable Beverage Service On The Go.",
+      "Compact Bundle Is Easy To Pack In Bags, Backpacks, And Lunch Kits, Making It Convenient For Commuting, Road Trips, Gym Sessions, And Weekend Outings.",
+      "Two-Item Set In Coordinated Matte Black And Forest Green Finishes Provides A Practical Drinkware Pair For Multiple Uses And Shared Beverage Needs."
+    ],
+    "description": "This SuperSonicBrick bundle combines a 500ml insulated stainless steel water bottle in Matte Black with a 350ml food-grade silicone travel cup in Forest Green. Designed for everyday hydration and portable beverage use, the set brings together durable reusable drinkware in two compact, travel-friendly formats for home, office, commuting, and outdoor activities.",
+    "search_terms": "insulated water bottle silicone travel cup reusable drinkware stainless steel bottle food grade silicone cup travel mug hydration set portable bottle bundle"
+  },
+  "a_plus_modules": [
+    {
+      "type": "lifestyle",
+      "size": [
+        970,
+        600
+      ],
+      "headline": "Ready for Commute, Gym, or Desk",
+      "body": "Carry hot or cold drinks in the 500ml stainless steel insulated bottle and the 350ml food-grade silicone travel cup. Matte Black and Forest Green finishes suit everyday use, travel, and on-the-go sipping.",
+      "alt_text": "Insulated water bottle and silicone travel cup for travel and daily use",
+      "image": {
+        "path": "samples/SSB-001+SSB-002_combo__aplus_3b211e210f0b_m0_lifestyle_970x600.png",
+        "mode": "generated",
+        "size": [
+          970,
+          600
+        ],
+        "prompt": "Lifestyle product photograph of a Matte Black Stainless Steel Insulated Water Bottle 500ml and a Forest Green Food-Grade Silicone Silicone Travel Cup 350ml being used in a bright everyday setting, photorealistic, true to the product's color and material, no text, no watermark.",
+        "file": "SSB-001+SSB-002_combo__aplus_3b211e210f0b_m0_lifestyle_970x600.png"
+      }
+    },
+    {
+      "type": "feature",
+      "size": [
+        970,
+        300
+      ],
+      "headline": "Two Drinkware Essentials in One Set",
+      "body": "Includes a 500ml Matte Black stainless steel insulated bottle and a 350ml Forest Green food-grade silicone travel cup. Total package weight: 541.0 g.",
+      "alt_text": "500ml stainless steel bottle and 350ml silicone cup set with package weight",
+      "image": {
+        "path": "samples/SSB-001+SSB-002_combo__aplus_3b211e210f0b_m1_feature_970x300.png",
+        "mode": "generated",
+        "size": [
+          970,
+          300
+        ],
+        "prompt": "Clean studio feature shot of a Matte Black Stainless Steel Insulated Water Bottle 500ml and a Forest Green Food-Grade Silicone Silicone Travel Cup 350ml on a soft neutral gradient background, highlighting material and finish, no text, no watermark.",
+        "file": "SSB-001+SSB-002_combo__aplus_3b211e210f0b_m1_feature_970x300.png"
+      }
+    }
+  ],
+  "images": {
+    "main": {
+      "path": "samples/SSB-001+SSB-002_combo__combo_SSB-001+SSB-002_3b211e210f0b_a1.jpg",
+      "mode": "generated",
+      "intended_count": 2,
+      "prompt": "Product photography of a bundle of 2 DIFFERENT items shown together side by side in one frame: a Matte Black Stainless Steel Insulated Water Bottle 500ml; a Forest Green Food-Grade Silicone Silicone Travel Cup 350ml. Show exactly one of each item (2 items total). Pure white background (RGB 255,255,255), studio lighting, no shadow, no props, no text or watermark. The group fills at least 85% of the frame. Square 1:1 aspect ratio.",
+      "file": "SSB-001+SSB-002_combo__combo_SSB-001+SSB-002_3b211e210f0b_a1.jpg"
+    },
+    "a_plus": [
+      {
+        "path": "samples/SSB-001+SSB-002_combo__aplus_3b211e210f0b_m0_lifestyle_970x600.png",
+        "mode": "generated",
+        "size": [
+          970,
+          600
+        ],
+        "prompt": "Lifestyle product photograph of a Matte Black Stainless Steel Insulated Water Bottle 500ml and a Forest Green Food-Grade Silicone Silicone Travel Cup 350ml being used in a bright everyday setting, photorealistic, true to the product's color and material, no text, no watermark.",
+        "file": "SSB-001+SSB-002_combo__aplus_3b211e210f0b_m0_lifestyle_970x600.png"
+      },
+      {
+        "path": "samples/SSB-001+SSB-002_combo__aplus_3b211e210f0b_m1_feature_970x300.png",
+        "mode": "generated",
+        "size": [
+          970,
+          300
+        ],
+        "prompt": "Clean studio feature shot of a Matte Black Stainless Steel Insulated Water Bottle 500ml and a Forest Green Food-Grade Silicone Silicone Travel Cup 350ml on a soft neutral gradient background, highlighting material and finish, no text, no watermark.",
+        "file": "SSB-001+SSB-002_combo__aplus_3b211e210f0b_m1_feature_970x300.png"
+      }
+    ]
+  },
+  "compliance": {
+    "compliant": true,
+    "error_count": 0,
+    "warn_count": 0,
+    "violations": []
+  },
+  "observability": {
+    "llm_calls": 5,
+    "prompt_tokens": 9858,
+    "completion_tokens": 609,
+    "image_calls": 3,
+    "cache_hits": 0,
+    "per_agent_seconds": {
+      "Supervisor": 0.0,
+      "Physical": 0.0,
+      "Copy": 7.846,
+      "Image": 53.947,
+      "Critic": 12.162,
+      "A+": 100.932,
+      "Compliance": 0.0
+    },
+    "total_seconds": 174.887,
+    "estimated_cost_usd": 0.1258,
+    "cost_basis": "estimated; rates overridable via COST_PER_* env vars"
+  },
+  "main_image": {
+    "path": "samples/SSB-001+SSB-002_combo__combo_SSB-001+SSB-002_3b211e210f0b_a1.jpg",
+    "mode": "generated",
+    "intended_count": 2,
+    "prompt": "Product photography of a bundle of 2 DIFFERENT items shown together side by side in one frame: a Matte Black Stainless Steel Insulated Water Bottle 500ml; a Forest Green Food-Grade Silicone Silicone Travel Cup 350ml. Show exactly one of each item (2 items total). Pure white background (RGB 255,255,255), studio lighting, no shadow, no props, no text or watermark. The group fills at least 85% of the frame. Square 1:1 aspect ratio.",
+    "file": "SSB-001+SSB-002_combo__combo_SSB-001+SSB-002_3b211e210f0b_a1.jpg"
+  },
+  "critic": {
+    "overall_pass": true,
+    "expected_count": 2,
+    "checks": [
+      {
+        "check": "white_background",
+        "pass": true,
+        "worst_channel_rgb": [
+          255,
+          255,
+          255
+        ],
+        "required": [
+          255,
+          255,
+          255
+        ]
+      },
+      {
+        "check": "coverage",
+        "pass": true,
+        "longest_side_fill": 0.996,
+        "area_ratio": 0.717,
+        "required_min": 0.85
+      },
+      {
+        "check": "count_projection",
+        "informational": true,
+        "pass": true,
+        "counted": 2,
+        "expected": 2
+      },
+      {
+        "check": "vision",
+        "skipped": false,
+        "pass": true,
+        "voted": {
+          "count_ok": true,
+          "items_ok": true
+        },
+        "samples": 3,
+        "verdicts": [
+          {
+            "count_seen": 2,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "Two items are visible: a matte black insulated bottle and a forest green silicone travel cup. Colors and materials appear consistent with the claim."
+          },
+          {
+            "count_seen": 2,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "Two items are visible: a matte black insulated bottle and a forest green silicone travel cup. Colors and materials appear consistent with the claim."
+          },
+          {
+            "count_seen": 2,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "Two items are visible: a matte black insulated water bottle and a forest green silicone travel cup. Colors and materials appear consistent with the claimed specs."
+          }
+        ]
+      }
+    ]
+  },
+  "compliant": true,
+  "image_compliant": true,
+  "copy_compliant": true,
+  "attempts": 1
+}

@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    # all secrets come from .env (never baked into the image); the service
+    # starts fine even if .env is absent or keys are blank.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # default to mock DB / no search unless .env overrides
+      DATABASE_URL: ${DATABASE_URL:-}
+      PRODUCTS_TABLE: ${PRODUCTS_TABLE:-}
+    volumes:
+      # persist generated images outside the container for inspection
+      - ./app/out:/app/app/out
+    restart: unless-stopped

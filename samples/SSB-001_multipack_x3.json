@@ -1,0 +1,228 @@
+{
+  "spec": {
+    "kind": "multipack",
+    "skus": [
+      "SSB-001"
+    ],
+    "units": 3
+  },
+  "products": [
+    {
+      "sku": "SSB-001",
+      "title": "Insulated Water Bottle 500ml",
+      "brand": "SuperSonicBrick",
+      "category": "Sports & Outdoors / Water Bottles",
+      "color": "Matte Black",
+      "material": "Stainless Steel",
+      "unit_count": 1,
+      "length_cm": 7.0,
+      "width_cm": 7.0,
+      "height_cm": 25.0,
+      "weight_g": 320.0,
+      "price": 19.99,
+      "image_urls": []
+    }
+  ],
+  "physical": {
+    "total_units": 3,
+    "product_weight_g": 960.0,
+    "packaging_weight_g": 49.0,
+    "total_weight_g": 1009.0,
+    "package_dimensions_cm": {
+      "length": 17.0,
+      "width": 17.0,
+      "height": 27.0
+    },
+    "arrangement": "2x2 grid",
+    "assumptions": [
+      "box+label base 25.0 g",
+      "padding 8.0 g and 1.0 cm per unit/side",
+      "units packed upright"
+    ]
+  },
+  "copy": {
+    "title": "SuperSonicBrick Insulated Water Bottle 500ml Pack of 3 Matte Black Stainless Steel",
+    "bullets": [
+      "Pack of 3 insulated water bottles, each with a 500 ml capacity for everyday hydration at home, at the gym, or on the go.",
+      "Stainless steel construction helps provide durable use, while the insulated design is made to help maintain beverage temperature.",
+      "Matte black finish gives each bottle a clean, modern look that works for sports, travel, office, and outdoor activities.",
+      "Each single bottle measures 7.0 x 7.0 x 25.0 cm, offering a slim profile that fits easily in bags and many cup holders.",
+      "Includes 3 bottles per order with a total package weight of 1009.0 g, making it a convenient multi-pack for families or teams."
+    ],
+    "description": "SuperSonicBrick Insulated Water Bottle 500ml is a pack of 3 stainless steel bottles in matte black. Designed for everyday hydration, each bottle has a 500 ml capacity and a slim 7.0 x 7.0 x 25.0 cm size. Suitable for sports, outdoor use, travel, and daily routines, this multi-pack provides three matching bottles in one order.",
+    "search_terms": "insulated water bottle stainless steel 500ml matte black pack of 3 sports outdoor hydration travel"
+  },
+  "a_plus_modules": [
+    {
+      "type": "lifestyle",
+      "size": [
+        970,
+        600
+      ],
+      "headline": "Stay Hydrated on Every Adventure",
+      "body": "The SuperSonicBrick 500ml insulated water bottle is built from stainless steel with a matte black finish. Compact and portable, it’s designed to fit easily into your daily routine, from workdays to workouts and travel.",
+      "alt_text": "Matte black 500ml stainless steel insulated water bottle in use",
+      "image": {
+        "path": "samples/SSB-001_multipack_x3__aplus_9b6f277ca16b_m0_lifestyle_970x600.png",
+        "mode": "generated",
+        "size": [
+          970,
+          600
+        ],
+        "prompt": "Lifestyle product photograph of a Matte Black Stainless Steel Insulated Water Bottle 500ml being used in a bright everyday setting, photorealistic, true to the product's color and material, no text, no watermark.",
+        "file": "SSB-001_multipack_x3__aplus_9b6f277ca16b_m0_lifestyle_970x600.png"
+      }
+    },
+    {
+      "type": "feature",
+      "size": [
+        970,
+        300
+      ],
+      "headline": "Compact Stainless Steel Insulation",
+      "body": "Made from durable stainless steel, this 500ml bottle offers a sleek matte black look in a convenient size. The insulated design helps support temperature retention while keeping hydration close at hand.",
+      "alt_text": "500ml matte black stainless steel insulated water bottle close-up",
+      "image": {
+        "path": "samples/SSB-001_multipack_x3__aplus_9b6f277ca16b_m1_feature_970x300.png",
+        "mode": "generated",
+        "size": [
+          970,
+          300
+        ],
+        "prompt": "Clean studio feature shot of a Matte Black Stainless Steel Insulated Water Bottle 500ml on a soft neutral gradient background, highlighting material and finish, no text, no watermark.",
+        "file": "SSB-001_multipack_x3__aplus_9b6f277ca16b_m1_feature_970x300.png"
+      }
+    }
+  ],
+  "images": {
+    "main": {
+      "path": "samples/SSB-001_multipack_x3__SSB-001_x3_9b6f277ca16b_a1.jpg",
+      "mode": "generated",
+      "intended_count": 3,
+      "prompt": "Product photography of 3 identical items: a Matte Black Stainless Steel Insulated Water Bottle 500ml. Show exactly 3 unit(s), no more, no less. Pure white background (RGB 255,255,255), studio lighting, no shadow, no props, no text or watermark. Product fills at least 85% of the frame. Square 1:1 aspect ratio.",
+      "file": "SSB-001_multipack_x3__SSB-001_x3_9b6f277ca16b_a1.jpg"
+    },
+    "a_plus": [
+      {
+        "path": "samples/SSB-001_multipack_x3__aplus_9b6f277ca16b_m0_lifestyle_970x600.png",
+        "mode": "generated",
+        "size": [
+          970,
+          600
+        ],
+        "prompt": "Lifestyle product photograph of a Matte Black Stainless Steel Insulated Water Bottle 500ml being used in a bright everyday setting, photorealistic, true to the product's color and material, no text, no watermark.",
+        "file": "SSB-001_multipack_x3__aplus_9b6f277ca16b_m0_lifestyle_970x600.png"
+      },
+      {
+        "path": "samples/SSB-001_multipack_x3__aplus_9b6f277ca16b_m1_feature_970x300.png",
+        "mode": "generated",
+        "size": [
+          970,
+          300
+        ],
+        "prompt": "Clean studio feature shot of a Matte Black Stainless Steel Insulated Water Bottle 500ml on a soft neutral gradient background, highlighting material and finish, no text, no watermark.",
+        "file": "SSB-001_multipack_x3__aplus_9b6f277ca16b_m1_feature_970x300.png"
+      }
+    ]
+  },
+  "compliance": {
+    "compliant": true,
+    "error_count": 0,
+    "warn_count": 0,
+    "violations": []
+  },
+  "observability": {
+    "llm_calls": 5,
+    "prompt_tokens": 9792,
+    "completion_tokens": 551,
+    "image_calls": 3,
+    "cache_hits": 0,
+    "per_agent_seconds": {
+      "Supervisor": 0.0,
+      "Physical": 0.0,
+      "Copy": 4.988,
+      "Image": 37.23,
+      "Critic": 13.554,
+      "A+": 94.35,
+      "Compliance": 0.0
+    },
+    "total_seconds": 150.122,
+    "estimated_cost_usd": 0.1257,
+    "cost_basis": "estimated; rates overridable via COST_PER_* env vars"
+  },
+  "main_image": {
+    "path": "samples/SSB-001_multipack_x3__SSB-001_x3_9b6f277ca16b_a1.jpg",
+    "mode": "generated",
+    "intended_count": 3,
+    "prompt": "Product photography of 3 identical items: a Matte Black Stainless Steel Insulated Water Bottle 500ml. Show exactly 3 unit(s), no more, no less. Pure white background (RGB 255,255,255), studio lighting, no shadow, no props, no text or watermark. Product fills at least 85% of the frame. Square 1:1 aspect ratio.",
+    "file": "SSB-001_multipack_x3__SSB-001_x3_9b6f277ca16b_a1.jpg"
+  },
+  "critic": {
+    "overall_pass": true,
+    "expected_count": 3,
+    "checks": [
+      {
+        "check": "white_background",
+        "pass": true,
+        "worst_channel_rgb": [
+          255,
+          255,
+          255
+        ],
+        "required": [
+          255,
+          255,
+          255
+        ]
+      },
+      {
+        "check": "coverage",
+        "pass": true,
+        "longest_side_fill": 0.968,
+        "area_ratio": 0.898,
+        "required_min": 0.85
+      },
+      {
+        "check": "count_projection",
+        "informational": true,
+        "pass": true,
+        "counted": 3,
+        "expected": 3
+      },
+      {
+        "check": "vision",
+        "skipped": false,
+        "pass": true,
+        "voted": {
+          "count_ok": true,
+          "items_ok": true
+        },
+        "samples": 3,
+        "verdicts": [
+          {
+            "count_seen": 3,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "Three insulated water bottles are visible. They appear matte black and metallic/stainless steel."
+          },
+          {
+            "count_seen": 3,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "Three matte black insulated water bottles are visible. They appear to be stainless steel or metal."
+          },
+          {
+            "count_seen": 3,
+            "count_ok": true,
+            "items_ok": true,
+            "notes": "Three insulated water bottles are visible. They appear matte black and consistent with stainless steel construction."
+          }
+        ]
+      }
+    ]
+  },
+  "compliant": true,
+  "image_compliant": true,
+  "copy_compliant": true,
+  "attempts": 1
+}
