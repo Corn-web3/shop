@@ -24,7 +24,7 @@ TABLE = "fbm_sku"
 # the columns we read (normalized name -> source column)
 SELECT_COLS = ("sku, title, brand, sku_category, sku_color, sku_composition, "
                "sku_length, sku_width, sku_height, sku_weight, remark, "
-               "image_url, cost")
+               "image_url, cost, sku_description")
 
 
 def _f(v) -> float:
@@ -55,6 +55,7 @@ def normalize(row: dict) -> Product:
         weight_g=round(_f(row.get("sku_weight")) * LB_TO_G, 1),
         price=round(_f(row.get("cost")), 2),  # only monetary field; cost (USD)
         image_urls=[img] if img.startswith("http") else [],
+        description=(row.get("sku_description") or "").strip(),
     )
 
 
@@ -102,3 +103,28 @@ def fetch_one(database_url: str, sku: str):
     finally:
         conn.close()
     return normalize(row) if row else None
+
+
+def _jsonable(v):
+    """Make a raw DB value JSON-serializable (bytes/bit, Decimal, datetime)."""
+    import datetime as _dt
+    from decimal import Decimal
+    if isinstance(v, (bytes, bytearray)):
+        return int.from_bytes(v, "big") if len(v) == 1 else v.hex()
+    if isinstance(v, Decimal):
+        return float(v)
+    if isinstance(v, (_dt.datetime, _dt.date)):
+        return v.isoformat()
+    return v
+
+
+def fetch_one_raw(database_url: str, sku: str):
+    """Every column of the fbm_sku row, JSON-safe. Read-only SELECT *."""
+    conn = _connect(database_url)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(f"SELECT * FROM {TABLE} WHERE sku = %s LIMIT 1", (sku,))
+            row = cur.fetchone()
+    finally:
+        conn.close()
+    return {k: _jsonable(v) for k, v in row.items()} if row else None

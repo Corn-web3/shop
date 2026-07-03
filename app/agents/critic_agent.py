@@ -15,6 +15,7 @@ from app.tools import llm
 WHITE_TOL = 6
 COVERAGE_MIN = 0.85
 CORNER_FRAC = 0.05
+PROPORTION_MIN = 0.6  # min agreement between on-screen and real aspect ratio
 
 
 def white_bg_check(img: Image.Image) -> dict:
@@ -46,6 +47,30 @@ def coverage_check(img: Image.Image) -> dict:
             "longest_side_fill": round(fill, 3),
             "area_ratio": round((bw * bh) / (W * H), 3),
             "required_min": COVERAGE_MIN}
+
+
+def proportion_check(img: Image.Image, product) -> dict:
+    """Does the product's on-screen aspect ratio match its real geometry? A
+    tall/narrow product (e.g. a bottle) should photograph tall; a square-ish
+    one (a chair) should look square. We compare the image bounding box's
+    long/short ratio to the product's two-largest-dimension ratio. A single 2D
+    photo is inherently approximate, so this is an informational signal, not a
+    hard gate — but a gross mismatch (a tall bottle drawn wide) is caught."""
+    gray = img.convert("L")
+    bbox = gray.point(lambda v: 0 if v >= 255 - WHITE_TOL else 255).getbbox()
+    dims = sorted([product.length_cm, product.width_cm, product.height_cm],
+                  reverse=True)
+    if not bbox or dims[1] <= 0:
+        return {"check": "proportion", "informational": True, "pass": False,
+                "reason": "no bbox or missing dimensions"}
+    bw, bh = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    seen = max(bw, bh) / max(1, min(bw, bh))
+    expected = dims[0] / dims[1]           # largest face: longest / second dim
+    agreement = min(seen, expected) / max(seen, expected)
+    return {"check": "proportion", "informational": True,
+            "pass": agreement >= PROPORTION_MIN,
+            "seen_aspect": round(seen, 2), "expected_aspect": round(expected, 2),
+            "agreement": round(agreement, 2)}
 
 
 def count_by_projection(img: Image.Image) -> int:
@@ -117,6 +142,10 @@ def run(image_path: str, kind: str, products, units: int,
 
     img = Image.open(image_path).convert("RGB")
     checks = [white_bg_check(img), coverage_check(img)]
+    # proportion only makes sense for a single framed unit (multipack/combo
+    # bounding boxes span multiple items, so the group aspect != one unit)
+    if kind != "combo" and units == 1:
+        checks.append(proportion_check(img, products[0]))
     vision = vision_check(image_path, items, expected_count)
     proj = count_by_projection(img)
     checks.append({"check": "count_projection",

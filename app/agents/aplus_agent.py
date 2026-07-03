@@ -22,6 +22,10 @@ def _image_prompt(mtype: str, products: List[Product]) -> str:
         return (f"Lifestyle product photograph of {desc} being used in a bright "
                 f"everyday setting, photorealistic, true to the product's color "
                 f"and material, no text, no watermark.")
+    if mtype == "specs":
+        return (f"Clean product detail photograph of {desc} shown at a slight "
+                f"angle on a plain light-gray background to convey scale and "
+                f"proportions, photorealistic, no text, no watermark.")
     return (f"Clean studio feature shot of {desc} on a soft neutral gradient "
             f"background, highlighting material and finish, no text, no watermark.")
 
@@ -38,9 +42,15 @@ def run(kind: str, products: List[Product], physical: dict, job_id: str,
         fname = f"aplus_{job_id}_m{i}_{mtype}_{w}x{h}.png"
         path = os.path.join(OUT_DIR, fname)
         emit("A+", f"generating module image {mtype} {w}x{h}")
-        img = imagegen.generate_module(
-            products, w, h, _image_prompt(mtype, products),
-            mc.get("headline", ""), path)
+        try:
+            img = imagegen.generate_module(
+                products, w, h, _image_prompt(mtype, products),
+                mc.get("headline", ""), path)
+        except Exception as e:
+            # a secondary A+ image is not worth failing the whole listing over
+            # (the hero image + copy already passed) — skip this module
+            emit("A+", f"module {mtype} image failed ({str(e)[:60]}); skipping it")
+            continue
         img["file"] = fname
         modules.append({
             "type": mtype, "size": [w, h],

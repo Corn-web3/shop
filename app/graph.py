@@ -17,7 +17,8 @@ from app import metrics, trace
 from app.db import load_product
 from app.physical import repack
 from app import compliance
-from app.agents import copy_agent, image_agent, critic_agent, aplus_agent
+from app.agents import (copy_agent, image_agent, critic_agent, aplus_agent,
+                        marketing_agent)
 
 MAX_ATTEMPTS = 2
 
@@ -27,6 +28,7 @@ class GenState(TypedDict, total=False):
     spec: dict
     physical: dict
     copy: dict
+    marketing: dict
     compliance: dict
     image: dict
     critic: dict
@@ -76,9 +78,29 @@ def physical_node(state: GenState) -> dict:
 
 def copy_node(state: GenState) -> dict:
     spec = state["spec"]
+    emit = _emit(state["job_id"])
+    # close the enrich -> generate loop: feed only HIGH-confidence, source-cited
+    # enrichment facts into the copy (safe no-op when no web search is configured)
+    from app import enrich
+    facts = enrich.sourced_facts(spec["skus"][0])
+    if facts:
+        emit("Copy", f"using {len(facts)} sourced enrichment fact(s): "
+                     + ", ".join(str(f.get("name")) for f in facts))
     out = copy_agent.run(spec["kind"], _products(spec), spec.get("units", 1),
-                         state["physical"], _emit(state["job_id"]))
+                         state["physical"], emit, enrichment=facts)
     return {"copy": out}
+
+
+def marketing_node(state: GenState) -> dict:
+    spec = state["spec"]
+    emit = _emit(state["job_id"])
+    from app import enrich
+    kws = enrich.buyer_keywords(spec["skus"][0])
+    if kws:
+        emit("Marketing", f"targeting {len(kws)} buyer keyword(s): "
+                          + ", ".join(kws[:6]) + ("…" if len(kws) > 6 else ""))
+    out = marketing_agent.run(state["copy"], _products(spec), kws, emit)
+    return {"copy": out["copy"], "marketing": out["score"]}
 
 
 def compliance_node(state: GenState) -> dict:
@@ -146,6 +168,7 @@ def build_graph():
     g.add_node("supervisor", _timed("Supervisor", supervisor_node))
     g.add_node("physical", _timed("Physical", physical_node))
     g.add_node("copy", _timed("Copy", copy_node))
+    g.add_node("marketing", _timed("Marketing", marketing_node))
     g.add_node("image", _timed("Image", image_node))
     g.add_node("critic", _timed("Critic", critic_node))
     g.add_node("aplus", _timed("A+", aplus_node))
@@ -153,7 +176,8 @@ def build_graph():
     g.set_entry_point("supervisor")
     g.add_edge("supervisor", "physical")
     g.add_edge("physical", "copy")
-    g.add_edge("copy", "image")
+    g.add_edge("copy", "marketing")
+    g.add_edge("marketing", "image")
     g.add_edge("image", "critic")
     g.add_conditional_edges("critic", after_critic,
                             {"retry": "image", "done": "aplus"})

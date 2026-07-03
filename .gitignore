@@ -8,3 +8,4 @@ app/out/
 # local credential docs — never commit
 SSB*SKU*.md
 *access*.md
+data/

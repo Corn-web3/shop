@@ -2,7 +2,7 @@
 
 import threading
 
-from app import metrics, trace
+from app import metrics, store, trace
 from app.db import load_product
 from app.graph import build_graph
 
@@ -29,6 +29,7 @@ def _assemble(spec: dict, state: dict) -> dict:
             "a_plus": [m.get("image") for m in aplus],
         },
         "compliance": compliance,
+        "marketing": state.get("marketing"),
         "observability": metrics.snapshot(),
         "main_image": main_image,
         "critic": critic,
@@ -47,6 +48,10 @@ def run_sync(bus, spec: dict) -> dict:
         final = _graph.invoke({"job_id": bus.job_id, "spec": spec})
         listing = _assemble(spec, final)
         bus.finish(result=listing)
+        try:
+            store.save(bus.job_id, listing)  # persist to the Library
+        except Exception as e:
+            bus.emit("Supervisor", f"warn: could not persist listing ({e})")
         bus.emit("Supervisor", "job complete")
         return listing
     except Exception as e:

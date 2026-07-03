@@ -15,18 +15,44 @@ Endpoints:
 
 import asyncio
 import json
+import os
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app import (chat, compliance, db, enrich, eval_harness, jobs, review,
-                 trace, variants)
+                 store, trace, variants)
 from app.config import MAX_UNITS, OUT_DIR, settings
 
 app = FastAPI(title="SSB Listing Studio")
 app.mount("/out", StaticFiles(directory=OUT_DIR), name="out")
+
+_WEB = os.path.join(os.path.dirname(__file__), "web", "index.html")
+
+
+@app.get("/")
+def home():
+    return FileResponse(_WEB)
+
+
+@app.get("/api")
+def index():
+    return {
+        "service": "SSB Listing Studio", "docs": "/docs", "ui": "/",
+        "db_source": db.source(),
+        "endpoints": {
+            "health": "GET /health", "products": "GET /products",
+            "product": "GET /product/{sku}", "enrich": "POST /enrich/{sku}",
+            "listing": "POST /listing/{sku}?units=N",
+            "trace": "GET /trace/{job_id} (SSE)", "job": "GET /jobs/{job_id}",
+            "chat": "POST /chat", "compliance": "POST /compliance",
+            "eval": "POST /eval",
+            "review": "POST /review/{job_id} | GET /diff?base=&recomposed=",
+            "variants": "GET /variants/{sku}", "images": "GET /out/{file}",
+        },
+    }
 
 
 @app.get("/health")
@@ -47,6 +73,15 @@ def products():
 def product(sku: str):
     try:
         return db.load_product(sku).to_dict()
+    except KeyError:
+        raise HTTPException(404, f"unknown sku {sku}")
+
+
+@app.get("/product/{sku}/raw")
+def product_raw(sku: str):
+    """Every source column for a SKU (untouched fbm_sku row on MySQL)."""
+    try:
+        return db.raw_row(sku)
     except KeyError:
         raise HTTPException(404, f"unknown sku {sku}")
 
@@ -147,6 +182,19 @@ def listing_diff(base: str, recomposed: str):
         return review.diff(base, recomposed)
     except KeyError:
         raise HTTPException(404, "unknown job (or listing not finished)")
+
+
+@app.get("/library")
+def library():
+    return store.list_summaries()
+
+
+@app.get("/library/{job_id}")
+def library_item(job_id: str):
+    item = store.get(job_id)
+    if not item:
+        raise HTTPException(404, "not in library")
+    return item
 
 
 @app.get("/jobs/{job_id}")

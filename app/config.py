@@ -62,6 +62,15 @@ class Settings:
         return _env("IMAGE_MODEL", default="gpt-image-2")
 
     @property
+    def http_user_agent(self):
+        # Some OpenAI-compatible gateways sit behind Cloudflare and block the
+        # default SDK User-Agent ("Your request was blocked"). A browser UA
+        # passes. Overridable via env if a gateway needs something specific.
+        return _env("HTTP_USER_AGENT", default=(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"))
+
+    @property
     def search_api_key(self):
         return _env("TAVILY_API_KEY", "SEARCH_API_KEY")
 

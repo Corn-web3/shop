@@ -21,11 +21,10 @@ conversationally.
         ┌────────────────────────▼─────────────────────────────┐
         │ LangGraph orchestration (Supervisor + agent nodes)    │
         │                                                       │
-        │ supervisor → physical → copy → image → critic         │
-        │                                  │   └─(fail,≤2)─┐     │
-        │                                  ▼               │     │
-        │            (pass) → aplus → compliance → END     │     │
-        │                                  ▲───────────────┘     │
+        │ supervisor → physical → copy → marketing → image      │
+        │                                        → critic        │
+        │                              (fail,≤2) ↺ image         │
+        │            (pass) → aplus → compliance → END           │
         └───────────────┬───────────────────────────────────────┘
                         │ tools
    ┌────────────────────┼───────────────────────────────────────┐
@@ -34,18 +33,24 @@ conversationally.
    └─────────────────────────────────────────────────────────────┘
 ```
 
+The **Copy → Marketing** hand-off closes the loop: Copy weaves in HIGH-confidence,
+source-cited enrichment facts; Marketing scores conversion and (compliance-safely)
+rewrites weak copy. Enrichment (Tavily) feeds both the facts and mined buyer
+keywords.
+
 **Agents / nodes and responsibilities**
 
 | Agent | Role | Tools / output |
 |---|---|---|
 | **Supervisor** | plans the run, loads products, drives the retry decision | trace events |
 | **Physical** | deterministically recomputes total weight, packaging, package dims | `physical.repack` |
-| **Copy** | A+ title (brand-led, no promo), 5 benefit bullets, backend search terms, A+ module copy | `llm.chat_json` |
+| **Copy** | A+ title (brand-led, no promo), 5 benefit bullets, backend search terms; weaves in source-cited enrichment facts | `llm.chat_json` + `enrich.sourced_facts` |
+| **Marketing / Conversion** | scores copy on benefit-clarity / keyword-coverage / appeal, rewrites weak copy **within compliance** | `llm.chat_json` + `enrich.buyer_keywords` |
 | **Image** | white-bg hero (JPEG, ≥1600px, snap-to-255), multipack count / combo same-frame | `imagegen` |
-| **Critic / QA** | image-vs-spec consistency: white-bg pixels, coverage, count, 3-vote vision check | `llm.vision_json`, PIL |
-| **A+** | builds 970×600 + 970×300 modules (image + headline + body + alt text) | `imagegen.generate_module` |
+| **Critic / QA** | image-vs-spec consistency: white-bg pixels, coverage, **aspect-ratio vs real dims**, count, 3-vote vision | `llm.vision_json`, PIL |
+| **A+** | builds 970×600 + two 970×300 modules (image + headline + body + alt text) | `imagegen.generate_module` |
 | **Compliance (B1)** | deterministic A+ rule validator over copy + images | `compliance.check_listing` |
-| **Research (Tier 1)** | web enrichment with cited sources, confidence, conflicts | `research`(Tavily) + `llm` |
+| **Research (Tier 1)** | web enrichment with cited sources, confidence, conflicts; mines buyer keywords | `research`(Tavily) + `llm` |
 
 Real orchestration (Supervisor, distinct nodes, shared state passed along, a
 Critic-driven retry edge back to Image) — **not a single mega-prompt or a regex
@@ -71,6 +76,11 @@ it with SSB-002").
 - **Research**: two prompts — a sourced one ("cite only provided URLs, never
   invent numeric specs") and a degraded one ("no web access → source_url=null,
   confidence ≤0.4, push unverifiable specs to missing").
+- **Marketing / conversion**: scores the copy 0–100 on benefit-clarity,
+  keyword-coverage and appeal, then rewrites only if <80 — with the full B1
+  compliance rules and "use only facts above" baked into the prompt, so lifting
+  conversion can never introduce a banned promo word or an invented spec (the
+  end-of-graph Compliance node re-validates the rewrite).
 
 ## 3. How A+ compliance is guaranteed
 
@@ -87,7 +97,12 @@ the trace. Because it is deterministic it is reproducible and free.
 Two layers in the Critic:
 1. **Deterministic pixel checks** (always reliable): white background sampled at
    the corners (per-channel minimum, snapped to exactly 255 in post), product
-   coverage by longest-side fill ≥85%, object count by column projection.
+   coverage by longest-side fill ≥85%, object count by column projection, and an
+   **aspect-ratio check** — the on-screen product bounding box's long/short ratio
+   is compared to the product's real two-largest-dimension ratio (a 7×7×25 cm
+   bottle should photograph tall ≈3.6:1; an 81×48×81 cm chair should look square
+   ≈1:1). Orientation-independent and informational, it catches a grossly
+   mis-proportioned render without over-rejecting (a 2D photo is approximate).
 2. **Vision verification** (3-sample majority vote): the model judges the image
    against the claimed unit count, color, and material; for combos it confirms
    each distinct item is present. On failure the Supervisor sends the job back to
@@ -135,29 +150,54 @@ cache), Tier 2 (copy structure, A+ modules, JPEG ≥1600 main image, reviewable
 trace, physical-consistency Critic), Tier 3 (chat multipack + combo multi-turn),
 B1–B5, and deliverables.
 
-Live validation used the aiprox gateway (gpt-5.4-mini for copy/vision/research,
-gpt-image-2 for images): single SSB-001 (hero PASS + 2 A+ modules), 3-pack
-(correct 3 bottles), combo SSB-001+002 (both items, same frame). Sample outputs
-for 3 SKUs incl. 1 multipack + 1 combo are committed under `samples/`.
+Live validation used an OpenAI-compatible gateway (gpt-5.4-mini for
+copy/vision/research/marketing, gpt-image-2 for images) plus Tavily for search.
+Real full run (SSB-OG-000001): hero PASS at 1600×1600 with white bg exactly
+(255,255,255) and 85.9% area / 96.6% longest-side fill; 4 sourced enrichment
+facts (Amazon/eBay URLs, conf 0.7–0.96) injected into Copy; 15 Tavily buyer
+keywords mined; three A+ modules at exact sizes; compliance 0 errors. Recompose
+verified: "make it a 3-pack" → 3-pack spec + 6036 g repack; "combine with
+SSB-OG-000002 as a combo" → combo spec (multi-turn "it" resolved) + side-by-side
+repack. Sample outputs for 3 SKUs incl. 1 multipack + 1 combo are under `samples/`.
 
 ## 8. Cost
 
 The `observability` block on every listing reports per-agent wall time, LLM
 call/token counts, image count, and an **estimated** USD cost (rates overridable
-via `COST_PER_*` env vars; the gateway's gpt-5.x / gpt-image-2 prices aren't
-published). Image generation dominates (~96 s and the bulk of spend per image;
-3 images per listing). Cost controls: `units` capped 1–12; enrichment cached per
-SKU; the acceptance harness and all unit tests run offline (no spend); live image
-generation reserved for final sample outputs. Actual spend during development was
-a small number of live listings/enrichments — well within the ~¥1500 budget.
+via `COST_PER_*` env vars). Image generation dominates: a full single listing
+measured **~$0.18 and ~390 s** (4 images — hero + three A+ modules — plus ~6 LLM
+calls). Cost controls: `units` capped 1–12; enrichment, buyer-keywords and raw DB
+rows cached per SKU; the acceptance harness and all unit tests run offline (no
+spend); live image generation reserved for samples/demos. Development spend was a
+small number of live listings/enrichments — well within the ~¥1500 budget.
 
-## 9. If we had more time
+**Gateway note (portability):** the LLM + image endpoints are any OpenAI-compatible
+gateway via `.env` (`LLM_*` / `IMAGE_*`). During development we hit a gateway whose
+image account pool returned `503 No available compatible accounts`; switching
+`BASE_URL`/`KEY` was a config-only change. One gateway sat behind Cloudflare and
+blocked the default SDK User-Agent (`Your request was blocked`) — the client now
+sends a browser `User-Agent` (overridable via `HTTP_USER_AGENT`), which is the
+kind of real-world integration hardening a reviewer's own key may need.
 
-- Wire **high-confidence, sourced** enrichment fields into the Copy agent (kept
-  separate now so degraded-mode unverified facts can't leak into listings).
+## 9. Beyond the baseline (differentiators)
+
+On top of Tier 0–3 + B1–B5, four additions deepen the parts the brief calls
+hardest (physical consistency, real agentic behaviour) and add product sense:
+
+- **Enrich → generate loop closed**: only HIGH-confidence, *source-cited*
+  enrichment facts are injected into Copy (degraded/unverified facts stay out),
+  so citations from the web actually shape the listing.
+- **Marketing / Conversion critic**: a distinct agent that scores conversion and
+  compliance-safely rewrites weak copy — lifting quality without hype words.
+- **Aspect-ratio consistency check**: image geometry validated against real
+  product dimensions, a deterministic consistency signal beyond count/colour.
+- **Buyer-keyword SEO mining**: Tavily-sourced search keywords feed title +
+  backend search terms via the Marketing agent.
+
+## 10. If we had more time
+
 - Add a copy-fix retry loop when compliance fails (today it reports + gates but
-  doesn't auto-correct).
-- Real infographic A+ module (data callouts) beyond lifestyle/feature shots.
-- Persist jobs/listings (currently in-memory) and add auth + rate limiting.
+  doesn't auto-correct); same for a low Marketing score.
+- Real infographic A+ module (rendered data callouts) beyond photo modules.
 - Stronger object counting (segmentation) instead of column projection.
-- Per-call real cost capture if the gateway returns pricing.
+- Per-call real cost capture if the gateway returns pricing; auth + rate limiting.

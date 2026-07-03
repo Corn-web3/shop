@@ -7,6 +7,7 @@ normalized Product shape is identical either way, so nothing downstream cares.
 """
 
 import threading
+from collections import OrderedDict
 from dataclasses import dataclass, asdict, field
 from typing import List, Dict, Optional
 
@@ -28,6 +29,7 @@ class Product:
     weight_g: float
     price: float
     image_urls: List[str] = field(default_factory=list)
+    description: str = ""  # source product description (sku_description), if any
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -98,3 +100,31 @@ def load_product(sku: str) -> Product:
         if p:
             return p
     raise KeyError(sku)
+
+
+_raw_cache: "OrderedDict[str, dict]" = OrderedDict()
+_RAW_CACHE_MAX = 512  # cap so browsing many SKUs can't grow the cache unbounded
+
+
+def raw_row(sku: str) -> dict:
+    """Every source column for a SKU. On MySQL this is the untouched fbm_sku
+    row (all 40 columns); on mock/postgres there is no wider row, so we return
+    the normalized record so the endpoint always answers. Cached: the DB is
+    read-only, so a given SKU's row is fetched at most once."""
+    hit = _raw_cache.get(sku)
+    if hit is not None:
+        return hit
+    if _is_mysql():
+        from app import db_mysql
+        row = db_mysql.fetch_one_raw(settings.database_url, sku)
+        if row:
+            return _cache_raw(sku, {"source": "mysql", "columns": row})
+    # ensure the SKU exists (raises KeyError -> 404 upstream) and echo normalized
+    return _cache_raw(sku, {"source": source(), "columns": load_product(sku).to_dict()})
+
+
+def _cache_raw(sku: str, result: dict) -> dict:
+    _raw_cache[sku] = result
+    while len(_raw_cache) > _RAW_CACHE_MAX:
+        _raw_cache.popitem(last=False)  # evict oldest
+    return result

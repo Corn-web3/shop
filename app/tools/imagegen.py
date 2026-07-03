@@ -37,27 +37,34 @@ def _rgb(name: str):
     return _COLORS.get(name.lower(), (90, 90, 90))
 
 
+def _descriptor(p: Product) -> str:
+    # color/material are sparse in real data — join only what's present so the
+    # prompt never has double spaces / dangling adjectives
+    return " ".join(x for x in [(p.color or "").strip(),
+                                (p.material or "").strip(), p.title] if x)
+
+
 def build_prompt(p: Product, count: int) -> str:
     item_word = "one item" if count == 1 else f"{count} identical items"
     return (
-        f"Product photography of {item_word}: a {p.color} {p.material} "
-        f"{p.title}. Show exactly {count} unit(s), no more, no less. "
+        f"Product photography of {item_word}: a {_descriptor(p)}. "
+        f"Show exactly {count} unit(s), no more, no less. "
         f"Pure white background (RGB 255,255,255), studio lighting, no shadow, "
-        f"no props, no text or watermark. Product fills at least 85% of the "
-        f"frame. Square 1:1 aspect ratio."
+        f"no props, no text or watermark. Product is centered and fills 90-95% "
+        f"of the frame with only a small even margin. Square 1:1 aspect ratio."
     )
 
 
 def build_combo_prompt(products) -> str:
-    items = "; ".join(
-        f"a {p.color} {p.material} {p.title}" for p in products)
+    items = "; ".join(f"a {_descriptor(p)}" for p in products)
     n = len(products)
     return (
         f"Product photography of a bundle of {n} DIFFERENT items shown together "
         f"side by side in one frame: {items}. Show exactly one of each item "
         f"({n} items total). Pure white background (RGB 255,255,255), studio "
-        f"lighting, no shadow, no props, no text or watermark. The group fills "
-        f"at least 85% of the frame. Square 1:1 aspect ratio."
+        f"lighting, no shadow, no props, no text or watermark. The group is "
+        f"centered and fills 90-95% of the frame with only a small even margin. "
+        f"Square 1:1 aspect ratio."
     )
 
 
@@ -115,14 +122,37 @@ def _synthesize_combo(products, path: str):
 GEN_SIZE_LANDSCAPE = "1536x1024"  # for landscape A+ module / scene images
 
 
+IMG_RETRIES = 2            # extra attempts on transient gateway errors
+_TRANSIENT = ("524", "502", "503", "504", "429", "timeout", "timed out",
+              "temporarily", "overloaded")
+
+
+def _is_transient(e: Exception) -> bool:
+    m = str(e).lower()
+    return any(t in m for t in _TRANSIENT)
+
+
 def _fetch(prompt: str, gen_size: str) -> Image.Image:
-    """Call the image model and return a PIL RGB image (b64 or url response)."""
-    metrics.add_image()
-    kwargs = {"api_key": settings.image_api_key}
+    """Call the image model and return a PIL RGB image (b64 or url response).
+    Retries transient gateway errors (Cloudflare 524 timeout, 503/429, etc.)
+    with backoff, since image generation can briefly exceed the proxy window."""
+    import time
+    kwargs = {"api_key": settings.image_api_key,
+              "default_headers": {"User-Agent": settings.http_user_agent}}
     if settings.image_base_url:
         kwargs["base_url"] = settings.image_base_url
-    resp = OpenAI(**kwargs).images.generate(
-        model=settings.image_model, prompt=prompt, size=gen_size)
+    resp = None
+    for attempt in range(IMG_RETRIES + 1):
+        try:
+            resp = OpenAI(**kwargs).images.generate(
+                model=settings.image_model, prompt=prompt, size=gen_size)
+            break
+        except Exception as e:
+            if attempt < IMG_RETRIES and _is_transient(e):
+                time.sleep(3 * (attempt + 1))   # 3s, 6s backoff
+                continue
+            raise
+    metrics.add_image()
     datum = resp.data[0]
     # Most OpenAI-compatible image models return base64; some return a URL.
     if getattr(datum, "b64_json", None):

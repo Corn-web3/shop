@@ -20,7 +20,37 @@ SYSTEM = (
 )
 
 
-def _multipack_user(p: Product, units: int, physical: dict) -> str:
+# Source descriptions can be long; cap to bound tokens while keeping the
+# selling points near the top (retailer copy leads with them).
+DESC_CAP = 1200
+
+
+def _facts_block(enrichment) -> str:
+    """Cited, high-confidence enrichment facts the LLM may weave in. Kept
+    separate from the DB specs so unverified data can never override them."""
+    if not enrichment:
+        return ""
+    lines = []
+    for f in enrichment[:8]:
+        v = f.get("value")
+        v = ", ".join(str(x) for x in v) if isinstance(v, list) else str(v)
+        lines.append(f"- {f.get('name')}: {v}  [source: {f.get('source_url')}]")
+    return ("\n\nVerified web-sourced facts (each is cited; you MAY use these to "
+            "strengthen the bullets/description, but do NOT contradict the specs "
+            "above and do NOT add uncited numeric claims):\n" + "\n".join(lines))
+
+
+def _source_desc(p: Product) -> str:
+    d = (p.description or "").strip()
+    if not d:
+        return ""
+    if len(d) > DESC_CAP:
+        d = d[:DESC_CAP].rsplit(" ", 1)[0] + " …"
+    return ("\n\nSource product description (extract real selling points from this; "
+            "do NOT invent specs beyond it):\n" + d)
+
+
+def _multipack_user(p: Product, units: int, physical: dict, enrichment=None) -> str:
     pack = "" if units == 1 else f"\n- this listing is a PACK OF {units} units"
     return (
         "Write a listing for this product. Stay factual to these specs:\n"
@@ -29,38 +59,55 @@ def _multipack_user(p: Product, units: int, physical: dict) -> str:
         f"- units per order: {units}{pack}\n"
         f"- single-unit size: {p.length_cm}x{p.width_cm}x{p.height_cm} cm\n"
         f"- total package weight: {physical['total_weight_g']} g\n- price: {p.price}"
+        + _source_desc(p) + _facts_block(enrichment)
     )
 
 
-def _combo_user(products: List[Product], physical: dict) -> str:
+def _combo_user(products: List[Product], physical: dict, enrichment=None) -> str:
     lines = []
     for p in products:
         lines.append(f"  * {p.brand} {p.title} | {p.color} | {p.material} | "
-                     f"{p.weight_g} g")
+                     f"{p.weight_g} g" + _source_desc(p))
     return (
         "Write ONE combined Amazon listing for a bundle of these distinct "
         "products (a combo). Merge and de-duplicate the selling points, and "
         "make the title clearly convey it is a bundle of both items:\n"
         + "\n".join(lines)
         + f"\n- total package weight: {physical['total_weight_g']} g"
+        + _facts_block(enrichment)
     )
 
 
 def _offline_multipack(p: Product, units: int, physical: dict) -> dict:
     pack = "" if units == 1 else f" (Pack of {units})"
     qty = f"{units} item" + ("" if units == 1 else "s")
+    color = (p.color or "").strip()
+    material = (p.material or "").strip()
+    cat = (p.category.split("/")[0].strip().replace("_", " ").lower()
+           if p.category else "everyday use")
+    # title: don't duplicate the brand if the DB title already leads with it,
+    # and only append color/material when present (both are sparse in real data)
+    name = p.title if p.title.lower().startswith(p.brand.lower()) else f"{p.brand} {p.title}"
+    title = " ".join(x for x in [name + pack, color, material] if x.strip())[:150]
+    # material bullet only when material is known; else a generic build bullet
+    made = (f"MADE TO LAST: Durable {material.lower()} construction"
+            + (f" in a {color.lower()} finish." if color else ".")) if material else (
+            f"QUALITY BUILD: Sturdy construction"
+            + (f" in a {color.lower()} finish." if color else " for everyday use."))
     return {
-        "title": f"{p.brand} {p.title}{pack} {p.color} {p.material}"[:150],
+        "title": title,
         "bullets": [
-            f"MADE OF {p.material.upper()}: Durable {p.material.lower()} in a {p.color.lower()} finish.",
+            made,
             f"RIGHT SIZE: Each unit measures {p.length_cm} x {p.width_cm} x {p.height_cm} cm.",
             f"PACK CONTENTS: Includes {qty}; total package weight {physical['total_weight_g']} g.",
-            f"EVERYDAY USE: Built for {p.category.split('/')[0].strip().lower()} and daily carry.",
+            f"EVERYDAY USE: Made for {cat} and dependable daily use.",
             "EASY CARE: Simple to clean and maintain for long-lasting performance.",
         ],
-        "description": f"The {p.brand} {p.title} combines {p.material.lower()} "
-        f"construction with a {p.color.lower()} finish for reliable everyday use.",
-        "search_terms": f"{p.material.lower()} {p.color.lower()} reusable travel sport"[:250],
+        "description": (f"The {name} offers dependable everyday performance"
+                        + (f" with {material.lower()} construction" if material else "")
+                        + (f" in a {color.lower()} finish." if color else ".")),
+        "search_terms": " ".join(x for x in [material.lower(), color.lower(),
+                                 cat, "portable durable"] if x.strip())[:250],
     }
 
 
@@ -82,8 +129,9 @@ def _offline_combo(products: List[Product], physical: dict) -> dict:
     }
 
 
-# A+ module plan: (type, width, height). 970x600 full-width + 970x300 standard.
-MODULE_PLAN = [("lifestyle", 970, 600), ("feature", 970, 300)]
+# A+ module plan: (type, width, height). Full-width lifestyle + two standard
+# modules (material/feature close-up and a specs/scale detail) for richer A+.
+MODULE_PLAN = [("lifestyle", 970, 600), ("feature", 970, 300), ("specs", 970, 300)]
 
 APLUS_SYSTEM = (
     "You write Amazon A+ content modules. For each requested module return a "
@@ -104,6 +152,11 @@ def _aplus_offline(kind, products, physical) -> List[dict]:
             body = (f"See the {names} in action — {p.color.lower()} "
                     f"{p.material.lower()} built for daily use.")
             alt = f"{p.color} {p.material} {names} used in a lifestyle setting"
+        elif mtype == "specs":
+            head = "Sized to Fit Your Space"
+            body = (f"Measures {p.length_cm} x {p.width_cm} x {p.height_cm} cm; "
+                    f"{physical['total_weight_g']} g total package weight.")
+            alt = f"dimensions and scale of the {p.color} {p.title}"
         else:
             head = f"Built From {p.material}"
             body = (f"Durable {p.material.lower()} construction, "
@@ -137,14 +190,14 @@ def aplus_modules(kind: str, products: List[Product], physical: dict,
 
 
 def run(kind: str, products: List[Product], units: int, physical: dict,
-        emit=lambda *a, **k: None) -> dict:
+        emit=lambda *a, **k: None, enrichment=None) -> dict:
     online = llm.available()
     if kind == "combo":
         emit("Copy", f"merging copy for combo of {len(products)} products"
                      + ("" if online else " (offline)"))
         if online:
             try:
-                return llm.chat_json(SYSTEM, _combo_user(products, physical))
+                return llm.chat_json(SYSTEM, _combo_user(products, physical, enrichment))
             except Exception as e:
                 emit("Copy", f"LLM failed ({e}); offline template")
         return _offline_combo(products, physical)
@@ -154,7 +207,7 @@ def run(kind: str, products: List[Product], units: int, physical: dict,
                  + ("" if online else " (offline)"))
     if online:
         try:
-            out = llm.chat_json(SYSTEM, _multipack_user(p, units, physical))
+            out = llm.chat_json(SYSTEM, _multipack_user(p, units, physical, enrichment))
             emit("Copy", f"title: {out.get('title', '')[:80]}")
             return out
         except Exception as e:

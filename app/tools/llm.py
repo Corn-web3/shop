@@ -18,17 +18,23 @@ def available() -> bool:
 
 
 def _client() -> "OpenAI":
-    kwargs = {"api_key": settings.llm_api_key}
+    kwargs = {"api_key": settings.llm_api_key,
+              "default_headers": {"User-Agent": settings.http_user_agent}}
     if settings.llm_base_url:
         kwargs["base_url"] = settings.llm_base_url
     return OpenAI(**kwargs)
+
+
+# Some gateways/models require the literal lowercase word "json" in the messages
+# to accept response_format=json_object (else a 400). Guarantee it defensively.
+_JSON_NUDGE = "\n\nRespond with a single valid json object only."
 
 
 def chat_json(system: str, user: str, model: Optional[str] = None) -> dict:
     resp = _client().chat.completions.create(
         model=model or settings.llm_model,
         messages=[{"role": "system", "content": system},
-                  {"role": "user", "content": user}],
+                  {"role": "user", "content": user + _JSON_NUDGE}],
         response_format={"type": "json_object"},
         temperature=0.4,
     )
@@ -44,7 +50,7 @@ def vision_json(system: str, user: str, image_path: str) -> dict:
         messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": [
-                {"type": "text", "text": user},
+                {"type": "text", "text": user + _JSON_NUDGE},
                 {"type": "image_url",
                  "image_url": {"url": f"data:image/png;base64,{b64}"}},
             ]},

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SSB Listing Studio</title>
+<style>
+  :root{--bg:#0c0e13;--panel:#13161d;--panel2:#171b24;--line:#242a36;--fg:#e8ecf3;
+    --muted:#8a93a6;--accent:#5b8cff;--good:#3fcaa0;--bad:#ff6b6b;--warn:#ffb454;--violet:#b98bff;
+    --chip:#222a38;--input:#0a0c11;--track:#1b2230;--idle:#3a4252;--hover:#1b2433;
+    --good-bg:#0f2a22;--bad-bg:#2a1418;}
+  body.light{--bg:#f5f7fa;--panel:#ffffff;--panel2:#fbfcfe;--line:#e4e8ef;--fg:#1a2030;
+    --muted:#667085;--accent:#2f6bff;--good:#12a06b;--bad:#dc4356;--warn:#b9791b;--violet:#7c5cff;
+    --chip:#eef1f6;--input:#ffffff;--track:#e9edf3;--idle:#cfd5e0;--hover:#eef3ff;
+    --good-bg:#e6f6ef;--bad-bg:#fdeaec;}
+  *{box-sizing:border-box;} html,body{height:100%;}
+  body{margin:0;font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--fg);}
+  .app{display:grid;grid-template-columns:212px 1fr;grid-template-rows:54px 1fr;height:100vh;}
+  header{grid-column:1/3;display:flex;align-items:center;gap:18px;padding:0 20px;border-bottom:1px solid var(--line);}
+  header .logo{font-weight:700;font-size:15px;} header .logo span{color:var(--accent);}
+  .stat{font-size:12px;color:var(--muted);} .stat b{color:var(--fg);font-size:13px;}
+  nav{border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:4px;}
+  nav a{display:flex;gap:9px;align-items:center;padding:9px 11px;border-radius:9px;color:var(--muted);cursor:pointer;font-weight:500;}
+  nav a:hover{background:var(--panel);} nav a.on{background:var(--hover);color:var(--fg);}
+  nav a .ic{width:18px;text-align:center;} nav .badge{margin-left:auto;font-size:11px;color:var(--muted);background:var(--chip);border-radius:10px;padding:0 7px;}
+  main{overflow:auto;padding:18px 22px;}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 10px;}
+  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 13px;cursor:pointer;font-size:13px;font-weight:500;}
+  button.ghost{background:var(--chip);color:var(--fg);} button.sm{padding:5px 9px;font-size:12px;}
+  button:disabled{opacity:.45;cursor:default;}
+  input,select,textarea{background:var(--input);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px;}
+  .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+  .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--muted);}
+  .pill.good{color:var(--good);border-color:var(--good);background:var(--good-bg);}
+  .pill.bad{color:var(--bad);border-color:var(--bad);background:var(--bad-bg);}
+  .muted{color:var(--muted);} .mono{font-family:ui-monospace,Menlo,monospace;}
+  /* catalog */
+  .skugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:9px;}
+  .skucard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;}
+  .skucard:hover{border-color:var(--accent);} .skucard b{font-size:12px;} .skucard span{display:block;color:var(--muted);font-size:11px;margin-top:2px;height:30px;overflow:hidden;}
+  /* agent pipeline */
+  .pipe{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;}
+  .agent{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px 10px;min-height:118px;transition:.25s;}
+  .agent .dot{width:9px;height:9px;border-radius:50%;background:var(--idle);display:inline-block;}
+  .agent.work{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 22px -6px var(--accent);}
+  .agent.work .dot{background:var(--accent);animation:pulse 1s infinite;}
+  .agent.done{border-color:#274b3c;} .agent.done .dot{background:var(--good);}
+  .agent.retry{border-color:var(--warn);} .agent.retry .dot{background:var(--warn);}
+  .agent.fail{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad);} .agent.fail .dot{background:var(--bad);}
+  .agent.fail .out{color:var(--bad);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .agent .ic{font-size:18px;} .agent .nm{font-weight:600;font-size:13px;margin:5px 0 2px;}
+  .agent .role{font-size:10.5px;color:var(--muted);line-height:1.35;height:42px;overflow:hidden;}
+  .agent .out{font-size:11px;margin-top:6px;color:var(--fg);} .agent .out img{width:100%;border-radius:6px;border:1px solid var(--line);background:#fff;}
+  .agent .t{position:absolute;top:9px;right:10px;font-size:10px;color:var(--muted);}
+  .agent .attempt{position:absolute;top:9px;right:10px;font-size:10px;color:var(--warn);}
+  .arrowback{text-align:center;color:var(--warn);font-size:12px;margin:6px 0;height:14px;}
+  /* queue list */
+  .qitem{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;background:var(--panel);}
+  .qitem .st{font-size:11px;} .qitem.run{border-color:var(--accent);}
+  /* trace */
+  .trace{font:12px/1.5 ui-monospace,Menlo,monospace;max-height:200px;overflow:auto;}
+  .ev{padding:2px 0;border-bottom:1px solid var(--track);} .ag{display:inline-block;min-width:90px;color:var(--accent);}
+  /* listing preview */
+  .preview{display:grid;grid-template-columns:minmax(280px,440px) 1fr;gap:18px;}
+  img.hero{width:100%;border-radius:10px;border:1px solid var(--line);background:#fff;}
+  .bul{margin:8px 0 0;padding-left:18px;} .bul li{margin:3px 0;}
+  .mods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
+  .mod img{width:100%;border-radius:8px;border:1px solid var(--line);background:#fff;}
+  .mod .h{font-weight:600;margin-top:6px;} .mod .b{color:var(--muted);font-size:12px;}
+  /* library grid */
+  .libgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;}
+  .libcard{background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden;cursor:pointer;}
+  .libcard:hover{border-color:var(--accent);} .libcard img{width:100%;height:150px;object-fit:contain;background:#fff;}
+  .libcard .meta{padding:9px 10px;} .libcard .meta b{font-size:12px;display:block;height:32px;overflow:hidden;}
+  .timebar{height:8px;background:var(--track);border-radius:5px;overflow:hidden;}
+  .timebar i{display:block;height:100%;background:var(--accent);}
+  a{color:var(--accent);text-decoration:none;}
+  .empty{color:var(--muted);padding:40px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">SSB <span>Listing Studio</span></div>
+    <div class="stat">DB <b id="s_db">…</b></div>
+    <div class="stat">Catalog <b id="s_cat">…</b></div>
+    <div class="stat">Generated <b id="s_gen">0</b></div>
+    <div class="stat">Compliant <b id="s_ok">—</b></div>
+    <span style="flex:1"></span>
+    <button id="theme" class="ghost sm" style="margin-right:8px">☀ Light</button>
+    <a href="/docs" target="_blank">API ↗</a>
+  </header>
+
+  <nav>
+    <a data-v="catalog" class="on"><span class="ic">▦</span> Catalog</a>
+    <a data-v="queue"><span class="ic">⚙</span> Studio / Queue <span class="badge" id="qbadge">0</span></a>
+    <a data-v="library"><span class="ic">▤</span> Library <span class="badge" id="lbadge">0</span></a>
+  </nav>
+
+  <main id="main"></main>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), ce=h=>{const d=document.createElement('div');d.innerHTML=h;return d.firstElementChild;};
+async function j(u,o){const r=await fetch(u,o);return r.json();}
+const esc=s=>(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+
+const AGENTS=[
+ {k:'Supervisor',ic:'🧭',role:'Orchestrator — plans the run, routes agents, drives the retry loop'},
+ {k:'Physical',ic:'⚖️',role:'Recomputes total weight, packaging & package dimensions (code, not LLM)'},
+ {k:'Copy',ic:'✍️',role:'Writes A+ title, 5 benefit bullets, backend search terms'},
+ {k:'Marketing',ic:'📈',role:'Scores conversion & rewrites weak copy — compliance-safe'},
+ {k:'Image',ic:'🖼️',role:'Generates the white-bg hero image with gpt-image-2'},
+ {k:'Critic',ic:'🔍',role:'Verifies image vs specs — white bg, count, 3-vote vision'},
+ {k:'A+',ic:'🧩',role:'Builds A+ modules (970×600 / 970×300) with alt text'},
+ {k:'Compliance',ic:'✅',role:'Deterministic Amazon A+ rule validator'},
+];
+
+let SKUS=[], QUEUE=[], running=false, LIB=[], LASTJOB=null;
+
+// persist just enough to restore the Studio view across a page refresh: the
+// last job id (the backend replays its full trace) and the last tab.
+function loadStudio(){
+  try{ LASTJOB=localStorage.ssb_lastjob||null; }catch(e){}
+  try{ QUEUE=(JSON.parse(localStorage.ssb_queue||'[]')||[]).filter(q=>q&&q.status!=='done'); }catch(e){ QUEUE=[]; }
+  // a job caught mid-POST (running but no job_id) can't be re-attached -> re-queue it
+  QUEUE.forEach(q=>{ if(q.status==='running' && !q.job_id) q.status='queued'; });
+}
+function saveStudio(){ try{ localStorage.ssb_lastjob=LASTJOB||''; }catch(e){} }
+function saveQueue(){ try{ localStorage.ssb_queue=JSON.stringify(QUEUE); }catch(e){} }
+
+function applyTheme(t){document.body.classList.toggle('light',t==='light');
+  const b=$('#theme'); if(b)b.textContent=t==='light'?'🌙 Dark':'☀ Light';
+  try{localStorage.ssbtheme=t;}catch(e){}}
+function initTheme(){let t='dark';try{t=localStorage.ssbtheme||'dark';}catch(e){}
+  applyTheme(t); $('#theme').onclick=()=>applyTheme(document.body.classList.contains('light')?'dark':'light');}
+
+async function boot(){
+  initTheme(); loadStudio();
+  const h=await j('/health');
+  $('#s_db').textContent=h.db_source;
+  SKUS=await j('/products'); $('#s_cat').textContent=SKUS.length;
+  await refreshLib();
+  document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>nav(a.dataset.v));
+  let v='catalog'; try{ v=localStorage.ssb_view||'catalog'; }catch(e){}
+  if(QUEUE.length) v='queue';  // pending/in-flight work -> land on Studio so it resumes
+  nav(v);
+}
+function nav(v){
+  try{ localStorage.ssb_view=v; }catch(e){}
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
+  ({catalog:viewCatalog, queue:viewQueue, library:viewLibrary}[v])();
+}
+
+/* ---------- CATALOG ---------- */
+function viewCatalog(){
+  $('#main').innerHTML=`
+    <div class="row" style="justify-content:space-between;margin-bottom:12px">
+      <h2 style="margin:0">Catalog · real SSB MySQL data</h2>
+      <div class="row">
+        <input id="filter" placeholder="filter SKU / title…" style="width:240px"/>
+        <select id="units">${[1,2,3,4,6].map(n=>`<option value="${n}">${n==1?'single':'pack of '+n}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="row"><b>Batch add</b> <span class="muted">paste SKUs (comma / space / newline) →</span>
+        <input id="paste" placeholder="SSB-OG-000001 SSB-OG-000002 …" style="flex:1"/>
+        <button id="batch">Add to queue</button></div>
+    </div>
+    <div class="skugrid" id="skus"></div>`;
+  const render=f=>{
+    const list=SKUS.filter(p=>(p.sku+' '+p.title).toLowerCase().includes(f.toLowerCase())).slice(0,180);
+    $('#skus').innerHTML=list.map(p=>`<div class="skucard" data-sku="${p.sku}" title="click for details">
+      <b>${p.sku}</b><span>${esc((p.title||'').slice(0,60))}</span>
+      <div class="row" style="margin-top:6px;justify-content:space-between">
+        <span class="muted" style="font-size:11px">${p.brand||'—'}</span>
+        <button class="sm queue">+ queue</button></div></div>`).join('');
+    document.querySelectorAll('.skucard').forEach(el=>{
+      el.onclick=()=>openProduct(el.dataset.sku);
+      el.querySelector('button.queue').onclick=e=>{e.stopPropagation();addQueue(el.dataset.sku,+$('#units').value);};
+    });
+  };
+  render('');
+  $('#filter').oninput=e=>render(e.target.value);
+  $('#batch').onclick=()=>{
+    const u=+$('#units').value;
+    ($('#paste').value.split(/[\s,]+/).filter(Boolean)).forEach(s=>addQueue(s.trim(),u));
+    $('#paste').value='';
+  };
+}
+function rawTableHTML(raw){
+  const cols=(raw&&raw.columns)||{};
+  const keys=Object.keys(cols);
+  if(!keys.length) return '';
+  const filled=keys.filter(k=>{const v=cols[k];return v!=null&&v!==''&&v!==0;}).length;
+  const rows=keys.map(k=>{
+    let v=cols[k]; const empty=(v==null||v===''||v===0);
+    v=(v==null?'':String(v));
+    return `<tr>
+      <td class="mono muted" style="padding:3px 12px 3px 0;vertical-align:top;white-space:nowrap;font-size:11px">${esc(k)}</td>
+      <td class="mono" style="padding:3px 0;border-bottom:1px solid var(--track);font-size:11px;word-break:break-word;color:${empty?'var(--muted)':'var(--fg)'}">${empty?'—':esc(v)}</td></tr>`;
+  }).join('');
+  return `<div style="margin-top:16px">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <div class="muted">Full DB row · ${keys.length} columns (${raw.source}) · ${filled} filled</div>
+      <a href="/product/${esc(cols.sku||'')}/raw" target="_blank" style="font-size:11px">raw ↗</a></div>
+    <div class="card" style="max-height:300px;overflow:auto;padding:10px 12px">
+      <table style="border-collapse:collapse;width:100%">${rows}</table></div></div>`;
+}
+const PCACHE={};  // sku -> {p, raw}, so reopening a SKU is instant
+function productBodyHTML(p,raw){
+  const dim=[p.length_cm,p.width_cm,p.height_cm].every(x=>x!=null)?`${p.length_cm} × ${p.width_cm} × ${p.height_cm} cm`:'—';
+  const img=(p.image_urls||[])[0];
+  const rows=[
+    ['SKU',p.sku],['Title',p.title],['Brand',p.brand||'—'],['Category',p.category||'—'],
+    ['Color',p.color||'—'],['Material',p.material||'—'],['Unit count',p.unit_count],
+    ['Dimensions',dim],['Weight',p.weight_g!=null?p.weight_g+' g':'—'],
+    ['Price',p.price!=null?'$'+p.price:'—'],
+  ];
+  return `<div style="display:grid;grid-template-columns:200px 1fr;gap:16px;margin-top:12px">
+      <div>${img?`<img src="${esc(img)}" style="width:100%;border-radius:9px;border:1px solid var(--line);background:#fff" onerror="this.replaceWith(document.createTextNode('image failed to load'))"/>`:'<div class="muted" style="padding:20px 0">no source image in DB</div>'}
+        ${img?`<div class="muted mono" style="font-size:10px;word-break:break-all;margin-top:6px"><a href="${esc(img)}" target="_blank">source ↗</a></div>`:''}</div>
+      <table style="border-collapse:collapse;width:100%">${rows.map(([k,v])=>`<tr>
+        <td class="muted" style="padding:5px 12px 5px 0;vertical-align:top;white-space:nowrap">${k}</td>
+        <td style="padding:5px 0;border-bottom:1px solid var(--track)">${esc(String(v==null||v===''?'—':v))}</td></tr>`).join('')}</table>
+    </div>
+    ${p.description?`<div style="margin-top:14px"><div class="muted" style="margin-bottom:4px">Source description (fed to Copy agent)</div>
+      <div class="card" style="max-height:180px;overflow:auto;white-space:pre-wrap;font-size:12px;color:var(--fg)">${esc(p.description)}</div></div>`:''}
+    ${rawTableHTML(raw)}
+    <div class="row" style="margin-top:14px;gap:8px">
+      <button class="p_q">+ add to queue</button>
+      <a href="/product/${esc(p.sku)}" target="_blank" class="pill" style="align-self:center">raw JSON ↗</a></div>`;
+}
+async function openProduct(sku){
+  if($('#povl')) return;  // guard: a modal is already open — ignore double clicks
+  // 1) show the shell immediately so the click always feels responsive
+  const ov=ce(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:flex;align-items:center;justify-content:center;padding:24px" id="povl">
+      <div class="card" style="max-width:640px;width:100%;max-height:88vh;overflow:auto">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <h2 style="margin:0">${esc(sku)} — DB record</h2>
+          <button class="ghost sm" id="pclose">close</button></div>
+        <div id="pbody" class="muted" style="padding:30px 0;text-align:center">loading…</div></div></div>`);
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close();};
+  ov.querySelector('#pclose').onclick=close;
+  // 2) fetch (cache first), then fill — bail if the user already closed it
+  try{
+    let d=PCACHE[sku];
+    if(!d){ const [p,raw]=await Promise.all([j('/product/'+sku),j('/product/'+sku+'/raw')]); d=PCACHE[sku]={p,raw}; }
+    if(!ov.isConnected) return;
+    const body=$('#pbody'); if(!body) return;
+    body.className=''; body.style.cssText='';
+    body.innerHTML=productBodyHTML(d.p,d.raw);
+    body.querySelector('.p_q').onclick=()=>{addQueue(d.p.sku,+($('#units')?.value||1));close();};
+  }catch(e){ const body=$('#pbody'); if(body)body.textContent='failed to load: '+e; }
+}
+function addQueue(sku,units){
+  QUEUE.push({sku,units,status:'queued',job_id:null});
+  saveQueue();
+  $('#qbadge').textContent=QUEUE.filter(q=>q.status!=='done').length;
+  toast(`${sku} ×${units} → queue`);
+  pump();
+}
+function toast(t){const el=ce(`<div style="position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:8px 14px;z-index:9;box-shadow:0 6px 24px -8px rgba(0,0,0,.4)">${esc(t)}</div>`);document.body.appendChild(el);setTimeout(()=>el.remove(),1500);}
+
+/* ---------- QUEUE / STUDIO ---------- */
+function viewQueue(){
+  $('#main').innerHTML=`
+    <h2>Agent pipeline <span class="muted" id="pipe_sub">— idle</span></h2>
+    <div class="pipe" id="pipe"></div>
+    <div class="arrowback" id="arrowback"></div>
+    <div class="row" style="margin:14px 0 8px">
+      <input id="chatin" placeholder="recompose… e.g. “make SSB-OG-000001 a 3 pack”, then “combine it with SSB-OG-000002 as a combo”" style="flex:1"/>
+      <button id="chatsend" class="ghost">Send</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px">
+      <div><h2>Queue</h2><div id="qlist"></div></div>
+      <div><h2>Live trace</h2><div class="card trace" id="trace"><span class="muted">run a job to stream the trace…</span></div></div>
+    </div>
+    <h2 style="margin-top:16px">Result</h2><div id="result"><div class="empty">finished listings appear here and are saved to the Library.</div></div>`;
+  renderPipe(); renderQueue();
+  $('#chatsend').onclick=sendChat; $('#chatin').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+  // restore after a refresh: re-attach to a running job, resume the queue, and
+  // repaint the last result. The backend replays the full trace for repainting.
+  if(!running) restoreStudio();
+}
+async function restoreStudio(){
+  $('#qbadge').textContent=QUEUE.filter(q=>q.status!=='done').length;
+  const runItem=QUEUE.find(q=>q.status==='running' && q.job_id);
+  if(runItem){
+    let st=null; try{ st=await j('/jobs/'+runItem.job_id); }catch(e){}
+    if(st && st.done===false){            // still live -> re-attach and hold the slot
+      running=true; LASTJOB=runItem.job_id; saveStudio();
+      $('#pipe_sub').innerHTML='— resuming…';
+      runPipeline(runItem.job_id, async res=>{
+        runItem.status='done'; saveQueue();
+        if(res) showResult(res); await refreshLib();
+        $('#qbadge').textContent=QUEUE.filter(q=>q.status!=='done').length;
+        running=false; pump();
+      });
+      return;
+    } else if(st && st.done===true){      // finished while away
+      runItem.status='done'; saveQueue(); if(st.result) showResult(st.result);
+    } else {                              // job evicted (server restarted) -> re-run it
+      runItem.status='queued'; runItem.job_id=null; saveQueue();
+    }
+  }
+  if(QUEUE.some(q=>q.status==='queued')){ pump(); return; }   // drain remaining queue
+  if(LASTJOB && !running) resumeJob(LASTJOB);                 // else view-only last result
+}
+async function resumeJob(id){
+  let st; try{ st=await j('/jobs/'+id); }catch(e){ LASTJOB=null; saveStudio(); return; }
+  if(!st || st.done===undefined){ LASTJOB=null; saveStudio(); return; }  // evicted/server restarted
+  const live=!st.done;
+  if(live){ if(running) return; running=true; }  // claim the single-flight slot so pump() can't start a 2nd job
+  $('#pipe_sub').innerHTML = live ? '— resuming…' : '— restored (last run)';
+  runPipeline(id, async res=>{
+    if(res) showResult(res);
+    await refreshLib();
+    if(live){ running=false; pump(); }  // release slot, drain any queued SKUs
+  });
+}
+function renderPipe(active){
+  const p=$('#pipe'); if(!p) return;
+  p.innerHTML=AGENTS.map(a=>`<div class="agent" id="ag_${a.k.replace('+','plus')}">
+    <span class="dot"></span><span class="t" id="t_${a.k.replace('+','plus')}"></span>
+    <div class="ic">${a.ic}</div><div class="nm">${a.k}</div><div class="role">${a.role}</div>
+    <div class="out" id="out_${a.k.replace('+','plus')}"></div></div>`).join('');
+}
+function agEl(k){return $('#ag_'+k.replace('+','plus'));}
+function setAgent(k,cls){const e=agEl(k);if(e){e.classList.remove('work','done','retry','fail');if(cls)e.classList.add(cls);}}
+function renderQueue(){
+  const q=$('#qlist'); if(!q) return;
+  if(!QUEUE.length){q.innerHTML='<div class="muted">queue empty — add SKUs from the Catalog.</div>';return;}
+  q.innerHTML=QUEUE.slice().reverse().map(it=>`<div class="qitem ${it.status==='running'?'run':''}">
+    <span class="dot" style="background:${it.status==='done'?'var(--good)':it.status==='running'?'var(--accent)':'var(--idle)'}"></span>
+    <b>${it.sku}</b> <span class="muted">×${it.units}</span>
+    <span class="st muted" style="margin-left:auto">${it.status}</span></div>`).join('');
+}
+
+async function pump(){
+  renderQueue();
+  if(running) return;
+  const next=QUEUE.find(q=>q.status==='queued'); if(!next) return;
+  running=true; next.status='running'; saveQueue();
+  if(!$('#pipe')) nav('queue');
+  renderQueue(); renderPipe(); $('#pipe_sub').textContent=`— ${next.sku} ×${next.units}`;
+  const r=await j(`/listing/${next.sku}?units=${next.units}`,{method:'POST'});
+  next.job_id=r.job_id; LASTJOB=r.job_id; saveStudio(); saveQueue();
+  runPipeline(r.job_id, async(res)=>{
+    next.status='done'; saveQueue(); $('#qbadge').textContent=QUEUE.filter(q=>q.status!=='done').length;
+    if(res) showResult(res); await refreshLib(); running=false; pump();
+  });
+}
+
+// messages that mean an agent hit a hard failure (not a normal retry)
+const HARDFAIL=/generation failed|no image to check|response had neither|error code|job error/i;
+function runPipeline(jobId,onDone){
+  let last=null, attempt=1; const failed=new Set(); let jobErr=null;
+  if($('#trace')) $('#trace').innerHTML='';
+  const es=new EventSource('/trace/'+jobId);
+  es.onmessage=e=>{
+    const d=JSON.parse(e.data);
+    // trace log
+    if($('#trace')){const ev=ce(`<div class="ev"><span class="ag">[${esc(d.agent)}]</span> ${esc(d.message)}</div>`);$('#trace').appendChild(ev);$('#trace').scrollTop=1e9;}
+    // retry detection
+    if(/sending back to Image/i.test(d.message)){ $('#arrowback').textContent='↻ Critic sent it back to Image — regenerating'; attempt++; }
+    // a terminal "job error" means whoever was mid-flight (e.g. A+) crashed —
+    // redden that worker before we would otherwise settle it as done
+    if(d.agent==='Supervisor'&&/job error/i.test(d.message)){
+      jobErr=d.message;
+      if(last&&last!=='Supervisor'&&AGENTS.some(a=>a.k===last)){ failed.add(last); setAgent(last,'fail'); out(last,'✗ crashed'); }
+    }
+    const k=AGENTS.find(a=>a.k===d.agent); if(!k) return;
+    // moving on: settle the previous agent as done, unless it had failed
+    if(d.agent!==last){ if(last&&!failed.has(last)) setAgent(last,'done'); last=d.agent; }
+    if(HARDFAIL.test(d.message)){
+      failed.add(d.agent); setAgent(d.agent,'fail');
+      out(d.agent, '✗ '+esc(d.message.slice(0,60)));
+    } else {
+      setAgent(d.agent, d.agent==='Image'&&attempt>1?'retry':'work');
+    }
+    if(d.agent==='Image'){const t=$('#t_Image');if(t&&attempt>1)t.innerHTML=`<span class="attempt">attempt ${attempt}</span>`;}
+  };
+  es.addEventListener('end', async(ev)=>{
+    es.close();
+    let end={}; try{end=JSON.parse(ev.data);}catch(_){}
+    const st=await j('/jobs/'+jobId);
+    const err=st.error||end.error||jobErr;
+    if(!st.result||err){
+      // terminal failure: redden whoever was mid-flight, surface the reason
+      if(last&&!failed.has(last)) setAgent(last,'fail');
+      if(!failed.size&&last) setAgent(last,'fail');
+      const sub=$('#pipe_sub'); if(sub)sub.innerHTML='— <span style="color:var(--bad)">failed</span>';
+      showError(err||'job ended with no result', [...failed]);
+    } else {
+      if(last&&!failed.has(last)) setAgent(last,'done');
+      finalizePipe(st.result);
+    }
+    onDone&&onDone(st.result);
+  });
+  es.onerror=()=>es.close();
+}
+function showError(msg,failedAgents){
+  const r=$('#result'); if(!r) return;
+  const who=(failedAgents&&failedAgents.length)?failedAgents.join(', '):'pipeline';
+  r.innerHTML=`<div class="card" style="border-color:var(--bad)">
+    <div class="row" style="gap:8px"><span class="pill bad">FAILED</span>
+      <b>Generation failed at: ${esc(who)}</b></div>
+    <div class="mono" style="margin-top:8px;font-size:12px;color:var(--bad);white-space:pre-wrap;word-break:break-word">${esc(String(msg))}</div>
+    <div class="muted" style="margin-top:8px;font-size:12px">Nothing was saved to the Library. Fix the cause (see the trace above) and run again.</div></div>`;
+}
+
+function finalizePipe(L){
+  if(!L) return;
+  AGENTS.forEach(a=>setAgent(a.k,'done'));
+  const ob=L.observability||{}, sec=ob.per_agent_seconds||{};
+  AGENTS.forEach(a=>{const t=$('#t_'+a.k.replace('+','plus')); if(t&&sec[a.k]!=null)t.textContent=sec[a.k]+'s';});
+  const c=L.copy||{}, ph=L.physical||{}, cr=L.critic||{}, cp=L.compliance||{};
+  out('Supervisor', `${L.attempts||1} attempt(s)`);
+  out('Physical', `${ph.total_weight_g} g · ${ph.package_dimensions_cm?Object.values(ph.package_dimensions_cm).join('×'):''} cm`);
+  out('Copy', `"${esc((c.title||'').slice(0,46))}…"`);
+  const mk=L.marketing||{}, ms=(mk.scores||{});
+  out('Marketing', mk.skipped?'—':`score ${ms.overall??'?'}${mk.rewrote?' · rewrote':''}`);
+  out('Image', (L.main_image||{}).file?`<img src="/out/${L.main_image.file}"/>`:'—');
+  const v=(cr.checks||[]).find(x=>x.check==='vision');
+  out('Critic', cr.overall_pass?`✓ PASS${v&&v.samples?' · '+v.samples+' votes':''}`:'✗ review');
+  out('A+', `${(L.a_plus_modules||[]).length} modules`);
+  out('Compliance', `${cp.error_count||0} err · ${cp.warn_count||0} warn`);
+}
+function out(k,html){const e=$('#out_'+k.replace('+','plus')); if(e)e.innerHTML=html;}
+
+async function sendChat(){
+  const m=$('#chatin').value.trim(); if(!m) return; $('#chatin').value='';
+  const r=await j('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:'web',message:m})});
+  if($('#trace')){$('#trace').innerHTML='';}
+  if(r.job_id){ renderPipe(); LASTJOB=r.job_id; saveStudio(); $('#pipe_sub').textContent=`— ${(r.spec||{}).kind||'recompose'}`;
+    runPipeline(r.job_id, async(res)=>{ if(res)showResult(res); await refreshLib(); }); }
+  else toast(r.reply||'could not parse');
+}
+
+/* ---------- shared listing preview ---------- */
+function previewHTML(L){
+  const c=L.copy||{}, ph=L.physical||{}, ob=L.observability||{}, ok=L.compliant;
+  const mods=(L.a_plus_modules||[]).map(m=>`<div class="mod"><img src="/out/${(m.image||{}).file}" alt="${esc(m.alt_text)}"/>
+    <div class="h">${esc(m.headline)}</div><div class="b">${esc(m.body)}</div>
+    <div class="muted mono" style="font-size:11px">${(m.size||[]).join('×')} · alt: ${esc(m.alt_text)}</div></div>`).join('');
+  return `<div class="card"><div class="preview">
+    <div>${(L.main_image||{}).file?`<img class="hero" src="/out/${L.main_image.file}"/>`:''}</div>
+    <div>
+      <div class="row" style="justify-content:space-between"><span class="muted mono">${(L.spec||{}).skus?.join(' + ')||''} · ${(L.spec||{}).kind}</span>
+        <span class="pill ${ok?'good':'bad'}">${ok?'COMPLIANT':'NEEDS REVIEW'}</span></div>
+      <div style="font-size:16px;font-weight:600;margin:6px 0">${esc(c.title)}</div>
+      <ul class="bul">${(c.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join('')}</ul>
+      <div class="muted" style="margin-top:8px;font-size:12px"><b>search terms:</b> ${esc(c.search_terms)}</div>
+      <div class="muted" style="font-size:12px"><b>physical:</b> ${ph.total_units} units · ${ph.total_weight_g} g · ${ph.arrangement||''}</div>
+      <div class="muted" style="font-size:12px"><b>cost~</b> $${ob.estimated_cost_usd} · ${ob.image_calls} imgs · ${ob.total_seconds}s · ${ob.llm_calls} LLM calls</div>
+    </div></div>
+    <h2 style="margin-top:14px">A+ modules</h2><div class="mods">${mods||'<span class="muted">none</span>'}</div></div>`;
+}
+function showResult(L){const r=$('#result'); if(r)r.innerHTML=previewHTML(L);}
+
+/* ---------- LIBRARY ---------- */
+async function refreshLib(){LIB=await j('/library'); $('#lbadge').textContent=LIB.length; $('#s_gen').textContent=LIB.length;
+  const ok=LIB.filter(x=>x.compliant).length; $('#s_ok').textContent=LIB.length?Math.round(100*ok/LIB.length)+'%':'—';}
+async function viewLibrary(){
+  await refreshLib();
+  $('#main').innerHTML=`<h2>Library · ${LIB.length} saved listings</h2>
+    ${LIB.length?`<div class="libgrid" id="lib"></div>`:'<div class="empty">no listings yet — generate one from the Catalog/Queue.</div>'}
+    <div id="detail"></div>`;
+  if(!LIB.length)return;
+  $('#lib').innerHTML=LIB.map(s=>`<div class="libcard" data-id="${s.job_id}">
+    ${s.main_image?`<img src="/out/${s.main_image}"/>`:'<div style="height:150px"></div>'}
+    <div class="meta"><b>${esc(s.title||s.skus.join('+'))}</b>
+      <div class="row" style="justify-content:space-between;margin-top:5px">
+        <span class="muted" style="font-size:11px">${s.kind} · ${s.skus.join('+')}</span>
+        <span class="pill ${s.compliant?'good':'bad'}">${s.compliant?'✓':'!'}</span></div></div></div>`).join('');
+  document.querySelectorAll('.libcard').forEach(el=>el.onclick=()=>openDetail(el.dataset.id));
+}
+async function openDetail(id){
+  const L=await j('/library/'+id);
+  const ob=L.observability||{}, sec=ob.per_agent_seconds||{}, mx=Math.max(0.001,...Object.values(sec));
+  const timeline=AGENTS.map(a=>`<div style="margin:4px 0"><div class="row" style="justify-content:space-between"><span>${a.ic} ${a.k}</span><span class="muted mono">${sec[a.k]!=null?sec[a.k]+'s':'—'}</span></div>
+    <div class="timebar"><i style="width:${sec[a.k]?Math.max(4,100*sec[a.k]/mx):0}%"></i></div></div>`).join('');
+  const d=$('#detail');
+  d.innerHTML=`<div class="card" style="margin-top:14px">
+     <div class="row" style="justify-content:space-between"><h2 style="margin:0">Listing detail</h2><button class="ghost sm" onclick="document.getElementById('detail').innerHTML=''">close</button></div>
+     ${previewHTML(L)}
+     <h2 style="margin-top:14px">Agent timeline</h2><div class="card">${timeline}</div></div>`;
+  d.scrollIntoView({behavior:'smooth'});
+}
+
+boot();
+</script>
+</body>
+</html>
