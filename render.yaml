@@ -1,0 +1,32 @@
+# Render blueprint for SSB Listing Studio (FastAPI + LangGraph).
+# Deploy: Render dashboard → New → Blueprint → pick the Corn-web3/shop repo.
+# Secrets (sync: false) are NOT stored here — fill them in the Render dashboard.
+services:
+  - type: web
+    name: ssb-listing-studio
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      # --- LLM (copy + vision critic), OpenAI-compatible gateway ---
+      - key: LLM_BASE_URL
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: VISION_MODEL
+        sync: false
+      # --- Image generation ---
+      - key: IMAGE_BASE_URL
+        sync: false
+      - key: IMAGE_API_KEY
+        sync: false
+      - key: IMAGE_MODEL
+        sync: false
+      # --- Web search (Tavily) for enrichment ---
+      - key: TAVILY_API_KEY
+        sync: false
+      # --- Real SSB MySQL (read-only) ---
+      - key: DATABASE_URL
+        sync: false
